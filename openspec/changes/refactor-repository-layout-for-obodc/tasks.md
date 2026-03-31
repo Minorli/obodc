@@ -24,7 +24,7 @@
 ## 5. Phase 4 Cleanup
 - [ ] 5.1 Remove obsolete legacy wrappers after verification
 - [x] 5.2 Update `CODEOWNERS`, docs, and release tooling to canonical paths
-- [ ] 5.3 Verify targeted builds and runtime startup paths after migration
+- [x] 5.3 Verify targeted builds and runtime startup paths after migration
 
 ## 6. Verification
 - [x] 6.1 Run `openspec validate refactor-repository-layout-for-obodc --strict`

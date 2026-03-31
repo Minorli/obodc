@@ -6,7 +6,7 @@
 /packages/libs/db-browser/	@PeachThinking @MarkPotato777
 /packages/libs/ob-sql-parser/	@PeachThinking @MarkPotato777
 # 3rd-party
-/server/3rd-party/	@MarkPotato777 @LioRoger
+/third_party/source/	@MarkPotato777 @LioRoger
 # common
 /packages/backend/common/	@LioRoger @guowl3
 # migrate
