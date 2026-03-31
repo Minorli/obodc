@@ -28,10 +28,10 @@ tests/          Canonical home for integration and repository-level test assets
 tools/          Canonical home for developer and packaging scripts
 build/          Canonical home for build config and packaging assets
 third_party/    Canonical home for vendored source and local binaries
-client/         Legacy location during migration
-distribution/   Legacy packaging layout during migration
-script/         Legacy wrappers during migration
-server/         Legacy backend layout during migration
+client/         Frontend submodule location; aliased by apps/web-client
+distribution/   Compatibility alias for build/packaging and build/output
+script/         Compatibility alias for tools/scripts
+server/         Compatibility aliases for moved backend modules
 openspec/       Fork-owned specs and change proposals
 ```
 

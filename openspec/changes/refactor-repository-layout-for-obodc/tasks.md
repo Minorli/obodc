@@ -23,7 +23,7 @@
 
 ## 5. Phase 4 Cleanup
 - [ ] 5.1 Remove obsolete legacy wrappers after verification
-- [ ] 5.2 Update `CODEOWNERS`, docs, and release tooling to canonical paths
+- [x] 5.2 Update `CODEOWNERS`, docs, and release tooling to canonical paths
 - [ ] 5.3 Verify targeted builds and runtime startup paths after migration
 
 ## 6. Verification

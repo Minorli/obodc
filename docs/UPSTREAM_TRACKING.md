@@ -66,7 +66,7 @@ But upstream is no longer treated as the canonical product roadmap for this fork
 
 These are not immediate merge candidates without a compatibility pass, but should be tracked:
 
-- `#4503` log4j-core in `libs/db-browser`
+- `#4503` log4j-core in `packages/libs/db-browser`
 - `#4502` log4j-core root dependency
 - `#4500` netty-codec-http
 - `#4499` tika-core

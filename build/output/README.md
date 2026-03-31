@@ -9,5 +9,5 @@ Layout:
 - `extensions/starters/` for packaged starter jars
 - `extensions/modules/` for packaged module jars
 
-Legacy `distribution/jar`, `distribution/plugins`, `distribution/starters`, and `distribution/modules`
-remain as compatibility symlinks during migration.
+`distribution/jar`, `distribution/plugins`, `distribution/starters`, and `distribution/modules`
+remain only as compatibility symlinks.

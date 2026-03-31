@@ -6,4 +6,4 @@ Current state:
 
 - `build/config/` now owns repository formatting and PMD configuration
 - `build/resources/` is the canonical target for repository build resources
-- legacy `builds/` and `build-resource/` paths remain as compatibility symlinks during migration
+- `builds/` and `build-resource/` remain only as compatibility symlinks

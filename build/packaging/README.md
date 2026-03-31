@@ -14,8 +14,8 @@ README.md           Packaging notes
 ## Current State
 
 `0.1.0-SNAPSHOT` is the fork bootstrap stage.
-Source-owned packaging assets now live here, while generated artifacts are being moved into `build/output/`.
-Legacy `distribution/` paths remain available as compatibility symlinks during migration.
+Source-owned packaging assets live here, while generated artifacts live under `build/output/`.
+`distribution/` remains only as a compatibility alias.
 
 ## Common Tasks
 
