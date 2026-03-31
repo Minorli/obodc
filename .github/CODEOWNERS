@@ -87,35 +87,58 @@
 
 # plugins
 /server/plugins/                                      @LioRoger @guowl3 @MarkPotato777
+/extensions/plugins/                                 @LioRoger @guowl3 @MarkPotato777
 /server/plugins/connect-plugin-doris/                 @LioRoger @guowl3 @MarkPotato777
+/extensions/plugins/connect-plugin-doris/            @LioRoger @guowl3 @MarkPotato777
 /server/plugins/connect-plugin-mysql/                 @LioRoger @guowl3 @MarkPotato777
+/extensions/plugins/connect-plugin-mysql/            @LioRoger @guowl3 @MarkPotato777
 /server/plugins/connect-plugin-ob-mysql/              @LioRoger @guowl3 @MarkPotato777
+/extensions/plugins/connect-plugin-ob-mysql/         @LioRoger @guowl3 @MarkPotato777
 /server/plugins/connect-plugin-ob-oracle/             @LioRoger @guowl3 @MarkPotato777
+/extensions/plugins/connect-plugin-ob-oracle/        @LioRoger @guowl3 @MarkPotato777
 /server/plugins/connect-plugin-oracle/                @LioRoger @guowl3 @MarkPotato777
+/extensions/plugins/connect-plugin-oracle/           @LioRoger @guowl3 @MarkPotato777
 
 /server/plugins/schema-plugin-api/                    @PeachThinking @MarkPotato777
+/extensions/plugins/schema-plugin-api/               @PeachThinking @MarkPotato777
 /server/plugins/schema-plugin-doris/                  @PeachThinking @MarkPotato777
+/extensions/plugins/schema-plugin-doris/             @PeachThinking @MarkPotato777
 /server/plugins/schema-plugin-mysql/                  @PeachThinking @MarkPotato777
+/extensions/plugins/schema-plugin-mysql/             @PeachThinking @MarkPotato777
 /server/plugins/schema-plugin-ob-mysql/               @PeachThinking @MarkPotato777
+/extensions/plugins/schema-plugin-ob-mysql/          @PeachThinking @MarkPotato777
 /server/plugins/schema-plugin-ob-oracle/              @PeachThinking @MarkPotato777
+/extensions/plugins/schema-plugin-ob-oracle/         @PeachThinking @MarkPotato777
 /server/plugins/schema-plugin-odp-sharding-ob-mysql/  @PeachThinking @MarkPotato777
+/extensions/plugins/schema-plugin-odp-sharding-ob-mysql/ @PeachThinking @MarkPotato777
 /server/plugins/schema-plugin-oracle/                 @PeachThinking @MarkPotato777
+/extensions/plugins/schema-plugin-oracle/            @PeachThinking @MarkPotato777
 
 /server/plugins/task-plugin-api/                      @LuckyPickleZZ @LioRoger
+/extensions/plugins/task-plugin-api/                 @LuckyPickleZZ @LioRoger
 /server/plugins/task-plugin-doris/                    @LuckyPickleZZ @LioRoger
+/extensions/plugins/task-plugin-doris/               @LuckyPickleZZ @LioRoger
 /server/plugins/task-plugin-mysql/                    @LuckyPickleZZ @LioRoger
+/extensions/plugins/task-plugin-mysql/               @LuckyPickleZZ @LioRoger
 /server/plugins/task-plugin-ob-mysql/                 @LuckyPickleZZ @LioRoger
+/extensions/plugins/task-plugin-ob-mysql/            @LuckyPickleZZ @LioRoger
 /server/plugins/task-plugin-ob-oracle/                @LuckyPickleZZ @LioRoger
+/extensions/plugins/task-plugin-ob-oracle/           @LuckyPickleZZ @LioRoger
 /server/plugins/task-plugin-oracle/                   @LuckyPickleZZ @LioRoger
+/extensions/plugins/task-plugin-oracle/              @LuckyPickleZZ @LioRoger
 
 
 # starters
 /server/starters/                                     @LioRoger @guowl3 @MarkPotato777
+/extensions/starters/                                @LioRoger @guowl3 @MarkPotato777
 /server/starters/desktop-starter/                     @LioRoger @guowl3 @MarkPotato777
+/extensions/starters/desktop-starter/                @LioRoger @guowl3 @MarkPotato777
 /server/starters/web-starter/                         @LioRoger @guowl3 @MarkPotato777
+/extensions/starters/web-starter/                    @LioRoger @guowl3 @MarkPotato777
 
 # modules
 /server/modules/                                      @LioRoger @CHLK
+/extensions/modules/                                 @LioRoger @CHLK
 
 # CI/CD
 /.github/                    @MarkPotato777 @LioRoger

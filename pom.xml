@@ -16,11 +16,11 @@
         <module>server/odc-test</module>
         <module>server/odc-common</module>
         <module>server/odc-core</module>
-        <module>server/plugins</module>
+        <module>extensions/plugins</module>
         <module>server/odc-service</module>
         <module>server/odc-server</module>
-        <module>server/starters</module>
-        <module>server/modules</module>
+        <module>extensions/starters</module>
+        <module>extensions/modules</module>
         <module>tests/integration</module>
         <module>server/odc-migrate</module>
     </modules>
