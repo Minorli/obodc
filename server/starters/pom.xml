@@ -83,7 +83,7 @@
                                 <Description>${project.version}</Description>
                             </manifestEntries>
                         </archive>
-                        <outputDirectory>${project.parent.parent.basedir}/distribution/starters</outputDirectory>
+                        <outputDirectory>${project.parent.parent.basedir}/build/output/extensions/starters</outputDirectory>
                     </configuration>
                     <executions>
                         <execution>

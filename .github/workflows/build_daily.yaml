@@ -82,7 +82,7 @@ jobs:
       - name: Install pty4j
         run: |
           echo "Start install pty4j"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
           mvn install:install-file -Dfile=./pty4j-0.11.4.jar -DgroupId=org.jetbrains.pty4j -DartifactId=pty4j -Dversion=0.11.4 -Dpackaging=jar
           echo "Install pty4j success"
@@ -90,7 +90,7 @@ jobs:
       - name: Install purejavacomm
         run: |
           echo "Start install purejavacomm"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
           mvn install:install-file -Dfile=./purejavacomm-0.0.11.1.jar -DgroupId=org.jetbrains.pty4j -DartifactId=purejavacomm -Dversion=0.0.11.1 -Dpackaging=jar
           echo "Install purejavacomm success"
@@ -119,7 +119,7 @@ jobs:
           echo "odc_rpm_release_number=${odc_rpm_release_number}"
           branch_match_regex="^(((dev/)?[0-9]\\.[0-9]\\.([0-9]{1,2}|x))|(release\\S*))$"
           tag_prefix=`[[ "${{ env.ODC_CURRENT_BRANCH }}" =~ ${branch_match_regex} ]] && echo "test-daily" || echo "dev-daily"`
-          odc_docker_image_tag="${tag_prefix}-$(cat distribution/odc-server-VER.txt)-${odc_rpm_release_number}"
+          odc_docker_image_tag="${tag_prefix}-$(cat build/packaging/server-version.txt)-${odc_rpm_release_number}"
           if [[ -n "${{ inputs.image_tag }}" ]]; then odc_docker_image_tag="${{ inputs.image_tag }}"; fi
           echo "odc_docker_image_tag=${odc_docker_image_tag}" >> $GITHUB_OUTPUT
           echo "odc_docker_image_tag=${odc_docker_image_tag}"
@@ -225,7 +225,7 @@ jobs:
       - name: Install pty4j
         run: |
           echo "Start install pty4j"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
           mvn install:install-file -Dfile=./pty4j-0.11.4.jar -DgroupId=org.jetbrains.pty4j -DartifactId=pty4j -Dversion=0.11.4 -Dpackaging=jar
           echo "Install pty4j success"
@@ -233,7 +233,7 @@ jobs:
       - name: Install purejavacomm
         run: |
           echo "Start install purejavacomm"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
           mvn install:install-file -Dfile=./purejavacomm-0.0.11.1.jar -DgroupId=org.jetbrains.pty4j -DartifactId=purejavacomm -Dversion=0.0.11.1 -Dpackaging=jar
           echo "Install purejavacomm success"
@@ -241,7 +241,7 @@ jobs:
       - name: Build jar & rpm (x86_64)
         run: |
           echo "Start prepare oceanbase-client"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
           cp ../build/resources/obclient/2.2.4/linux_x86/obclient.tar.gz obclient.tar.gz
           popd
@@ -251,39 +251,39 @@ jobs:
           mvn clean install -Dmaven.test.skip=true
           mvn --file server/odc-server/pom.xml rpm:rpm -Drpm.prefix=/opt
           echo "Build rpm package success"
-          rm --force --recursive --verbose distribution/docker/resources/odc-*.rpm
-          mkdir -p distribution/docker/resources/
-          mv --verbose server/odc-server/target/rpm/odc-server/RPMS/*/odc-*.rpm distribution/docker/resources/
-          mv --verbose server/odc-server/target/*-executable.jar distribution/jar/odc.jar
-          cp -fv distribution/jar/odc.jar distribution/jar/odc-slim.jar
-          zip -d distribution/jar/odc-slim.jar "BOOT-INF/classes/static/*"
+          rm --force --recursive --verbose build/packaging/docker/resources/odc-*.rpm
+          mkdir -p build/packaging/docker/resources/
+          mv --verbose server/odc-server/target/rpm/odc-server/RPMS/*/odc-*.rpm build/packaging/docker/resources/
+          mv --verbose server/odc-server/target/*-executable.jar build/output/jars/odc.jar
+          cp -fv build/output/jars/odc.jar build/output/jars/odc-slim.jar
+          zip -d build/output/jars/odc-slim.jar "BOOT-INF/classes/static/*"
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
           name: odc-artifact-jar
           path: |
-            distribution/plugins/*.jar
-            distribution/starters/*.jar
-            distribution/modules/*.jar
-            distribution/jar/*.jar
+            build/output/extensions/plugins/*.jar
+            build/output/extensions/starters/*.jar
+            build/output/extensions/modules/*.jar
+            build/output/jars/*.jar
       - name: Upload rpm (x86_64)
         uses: actions/upload-artifact@v4
         with:
           name: odc-server-${{ steps.set_release_version.outputs.new_version }}.x86_64.rpm
-          path: distribution/docker/resources/odc-*.rpm
+          path: build/packaging/docker/resources/odc-*.rpm
       - name: Build docker image (x86_64)
         run: |
-          sed -e "s/DATE_CHANGE/$(date)/" -i distribution/docker/odc/Dockerfile
+          sed -e "s/DATE_CHANGE/$(date)/" -i build/packaging/docker/odc/Dockerfile
           echo "odc_docker_image_tag=${odc_docker_image_tag}"
-          pushd distribution/docker
-          docker build -t docker.io/oceanbase/odc:${odc_docker_image_tag} -f odc/Dockerfile .
-          docker save -o resources/odc-${odc_docker_image_tag}.tar.gz docker.io/oceanbase/odc:${odc_docker_image_tag}
+          pushd build/packaging/docker
+          docker build -t docker.io/minorli/obodc:${odc_docker_image_tag} -f odc/Dockerfile .
+          docker save -o resources/obodc-${odc_docker_image_tag}.tar.gz docker.io/minorli/obodc:${odc_docker_image_tag}
           popd
       - name: Upload docker image (x86_64)
         uses: actions/upload-artifact@v4
         with:
-          name: odc-${{ env.odc_docker_image_tag }}.tar.gz
-          path: distribution/docker/resources/odc-*.tar.gz
+          name: obodc-${{ env.odc_docker_image_tag }}.tar.gz
+          path: build/packaging/docker/resources/obodc-*.tar.gz
 
   build-client:
     name: Build Client Artifact

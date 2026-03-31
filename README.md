@@ -83,7 +83,7 @@ tools/scripts/nohup-start-odc.sh
 `0.1.0-SNAPSHOT` is a fork bootstrap line. Official fork-owned container images and release artifacts are not published yet.
 For now, build packages from source in this repository.
 
-- Packaging overview: [distribution/README.md](distribution/README.md)
+- Packaging overview: [build/packaging/README.md](build/packaging/README.md)
 - Backend development guide: [docs/en-US/DEVELOPER_GUIDE.md](docs/en-US/DEVELOPER_GUIDE.md)
 - Contribution guide: [docs/en-US/CONTRIBUTION.md](docs/en-US/CONTRIBUTION.md)
 - Upstream tracking policy: [docs/UPSTREAM_TRACKING.md](docs/UPSTREAM_TRACKING.md)

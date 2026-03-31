@@ -13,7 +13,7 @@ function sed_file() {
 function set_rpm_version() {
     local full_version="$1"
     local formal_version=$(echo "${full_version}" | awk -F - '{print $1}')
-    echo "$formal_version" >distribution/odc-server-VER.txt
+    echo "$formal_version" >build/packaging/server-version.txt
     return $?
 }
 

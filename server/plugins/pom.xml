@@ -173,7 +173,7 @@
                                 <Plugin-Dependencies>${plugin.dependencies}</Plugin-Dependencies>
                             </manifestEntries>
                         </archive>
-                        <outputDirectory>${project.parent.parent.basedir}/distribution/plugins</outputDirectory>
+                        <outputDirectory>${project.parent.parent.basedir}/build/output/extensions/plugins</outputDirectory>
                     </configuration>
                     <executions>
                         <execution>

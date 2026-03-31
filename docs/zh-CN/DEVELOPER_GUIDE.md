@@ -98,5 +98,5 @@ tools/scripts/nohup-start-odc.sh
 
 ## 9. 打包
 
-打包说明见 [distribution/README.md](../../distribution/README.md)。
+打包说明见 [build/packaging/README.md](../../build/packaging/README.md)。
 当前 `0.1.0-SNAPSHOT` 阶段以源码构建产物为主。

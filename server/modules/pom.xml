@@ -31,7 +31,7 @@
                         </descriptors>
                         <appendAssemblyId>false</appendAssemblyId>
                         <finalName>${project.artifactId}-${project.version}</finalName>
-                        <outputDirectory>${project.parent.parent.basedir}/distribution/modules</outputDirectory>
+                        <outputDirectory>${project.parent.parent.basedir}/build/output/extensions/modules</outputDirectory>
                     </configuration>
                     <executions>
                         <execution>

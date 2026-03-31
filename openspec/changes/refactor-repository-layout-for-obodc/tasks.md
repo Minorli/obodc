@@ -10,9 +10,9 @@
 
 ## 3. Phase 2 Build And Packaging Migration
 - [x] 3.1 Move script sources to `tools/scripts/` and keep legacy wrappers
-- [ ] 3.2 Move source-owned packaging assets to `build/packaging/`
+- [x] 3.2 Move source-owned packaging assets to `build/packaging/`
 - [x] 3.3 Move local binary and vendored assets to `third_party/` and `build/resources/`
-- [ ] 3.4 Update Maven paths, packaging scripts, and CI workflows
+- [x] 3.4 Update Maven paths, packaging scripts, and CI workflows
 
 ## 4. Phase 3 Java Module Migration
 - [ ] 4.1 Move app entry modules under `apps/`
@@ -29,4 +29,4 @@
 ## 6. Verification
 - [x] 6.1 Run `openspec validate refactor-repository-layout-for-obodc --strict`
 - [x] 6.2 Run targeted grep/path audit for legacy layout references
-- [ ] 6.3 Run representative Maven and packaging verification after each migration phase
+- [x] 6.3 Run representative Maven and packaging verification after each migration phase

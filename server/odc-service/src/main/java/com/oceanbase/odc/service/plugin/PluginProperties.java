@@ -41,7 +41,8 @@ public class PluginProperties {
 
     static {
         DEFAULT_PLUGIN_DIRS.add(Paths.get("").toAbsolutePath().normalize().resolve("plugins"));
-        // set plugins path as currentWorkdir/distribution/plugins
+        DEFAULT_PLUGIN_DIRS.add(Paths.get("").toAbsolutePath().normalize().resolve("build/output/extensions/plugins"));
+        // compatibility path during repository migration
         DEFAULT_PLUGIN_DIRS.add(Paths.get("").toAbsolutePath().normalize().resolve("distribution/plugins"));
         // 默认安装目录
         DEFAULT_PLUGIN_DIRS.add(new File("/opt/odc/plugins").toPath());

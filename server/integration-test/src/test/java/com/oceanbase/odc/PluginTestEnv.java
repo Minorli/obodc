@@ -27,7 +27,7 @@ public abstract class PluginTestEnv {
     static {
         String pluginPath = Paths.get("").toAbsolutePath()
                 .getParent().getParent()
-                .resolve("distribution/plugins").toFile().getAbsolutePath();
+                .resolve("build/output/extensions/plugins").toFile().getAbsolutePath();
         System.setProperty(PluginProperties.PLUGIN_DIR_KEY, pluginPath);
     }
 

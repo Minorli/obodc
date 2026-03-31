@@ -22,14 +22,14 @@ cp -fv "${ODC_DIR}"/server/odc-server/target/classes/log4j2-task.xml "${ODC_DIR}
 
 echo "copy plugin jars to ${ODC_DIR}/plugins ."
 find "${ODC_DIR}/plugins" -type f -name '*.jar' -exec rm -fv {} +
-cp -fv "${ODC_DIR}"/distribution/plugins/*.jar "${ODC_DIR}"/plugins/
+cp -fv "${ODC_DIR}"/build/output/extensions/plugins/*.jar "${ODC_DIR}"/plugins/
 
 echo "copy starter jars to ${ODC_DIR}/starters ."
 find "${ODC_DIR}/starters" -type f -name '*.jar' -exec rm -fv {} +
-cp -fv "${ODC_DIR}"/distribution/starters/*.jar "${ODC_DIR}"/starters/
+cp -fv "${ODC_DIR}"/build/output/extensions/starters/*.jar "${ODC_DIR}"/starters/
 
 echo "copy modules jars to ${ODC_DIR}/modules ."
 find "${ODC_DIR}/modules" -type f -name '*.jar' -exec rm -fv {} +
-cp -fv "${ODC_DIR}"/distribution/modules/*.jar "${ODC_DIR}"/modules/
+cp -fv "${ODC_DIR}"/build/output/extensions/modules/*.jar "${ODC_DIR}"/modules/
 
 exit $?

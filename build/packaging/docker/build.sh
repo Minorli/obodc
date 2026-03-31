@@ -21,15 +21,15 @@ function get_cpu_arch() {
 }
 
 function get_odc_version() {
-    local odc_version=$(cat "../odc-server-VER.txt" | sed 's/[ \s\t\n\r]*//g')
+    local odc_version=$(cat "../server-version.txt" | sed 's/[ \s\t\n\r]*//g')
     echo "${odc_version}"
 }
 
 main() {
 
-    local register="docker.io"
-    local namespace="oceanbase"
-    local app_name=odc
+    local register="${ODOCKER_REGISTRY:-docker.io}"
+    local namespace="${ODOCKER_NAMESPACE:-minorli}"
+    local app_name="${ODOCKER_APP_NAME:-obodc}"
     local image_name=${register}/${namespace}/${app_name}
     local image_tag=${2:-$(get_odc_version)}
     local cpu_arch=$(get_cpu_arch)
@@ -40,7 +40,7 @@ main() {
     build)
         if [ ! -e resources/*.rpm ]; then
             echo "There is no rpm packages in \"resources\""
-            echo "run \"../../script/build_rpm.sh\" to create rpm and copy to resources/"
+            echo "run \"../../../tools/scripts/build_rpm.sh\" to create rpm and copy to resources/"
             exit 1
         fi
         docker build --build-arg "ARCH=${cpu_arch}" -t ${image_name}:${image_tag} -f odc/Dockerfile .
@@ -57,9 +57,9 @@ main() {
         docker login --username=${username} ${register}
         ;;
     save)
-        echo "save docker image to resources/odc-${image_tag}-${cpu_arch}.tar.gz"
+        echo "save docker image to resources/obodc-${image_tag}-${cpu_arch}.tar.gz"
         docker save ${image_name}:${image_tag} |
-            gzip > resources/odc-${image_tag}-${cpu_arch}.tar.gz
+            gzip > resources/obodc-${image_tag}-${cpu_arch}.tar.gz
         ;;
     push)
         docker tag ${image_name}:${image_tag} ${image_name}:latest
@@ -67,7 +67,7 @@ main() {
         docker push ${image_name}:latest
         ;;
     *)
-        echo "Usage: build.sh build <IMAGE_TAG:odc_version>"
+        echo "Usage: build.sh build <IMAGE_TAG:obodc_version>"
         echo "       build.sh login <USERNAME>"
         echo "       build.sh push <IMAGE_TAG:odc_version>"
         echo "       build.sh save <IMAGE_TAG:odc_version>"

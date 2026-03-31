@@ -105,7 +105,7 @@ function config_ossutil() {
 # RETURN:  ODC version number, e.g. 3.3.0
 #############################################
 function get_odc_version() {
-    local odc_version=$(cat "${ODC_DIR}/distribution/odc-server-VER.txt" | sed 's/[ \s\t\n\r]*//g')
+    local odc_version=$(cat "${ODC_DIR}/build/packaging/server-version.txt" | sed 's/[ \s\t\n\r]*//g')
     echo "${odc_version}"
 }
 
@@ -415,10 +415,10 @@ function maven_build_rpm() {
 }
 
 function copy_rpm_resources() {
-    echo "copy rpm package(s) to distribution/docker/resources"
-    rm -vf ${ODC_DIR}/distribution/docker/resources/odc-*.rpm
-    mkdir -p ${ODC_DIR}/distribution/docker/resources/
-    mv --verbose ${ODC_DIR}/server/odc-server/target/rpm/odc-server/RPMS/*/odc-*.rpm ${ODC_DIR}/distribution/docker/resources/
+    echo "copy rpm package(s) to build/packaging/docker/resources"
+    rm -vf ${ODC_DIR}/build/packaging/docker/resources/odc-*.rpm
+    mkdir -p ${ODC_DIR}/build/packaging/docker/resources/
+    mv --verbose ${ODC_DIR}/server/odc-server/target/rpm/odc-server/RPMS/*/odc-*.rpm ${ODC_DIR}/build/packaging/docker/resources/
     func_echo "odc server rpm package(s) copied to $(pwd)"
     return $?
 }

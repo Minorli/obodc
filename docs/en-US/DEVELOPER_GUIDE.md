@@ -100,5 +100,5 @@ This fork selectively cherry-picks useful upstream changes, but new work should 
 
 ## 9. Packaging
 
-Packaging notes live in [distribution/README.md](../../distribution/README.md).
+Packaging notes live in [build/packaging/README.md](../../build/packaging/README.md).
 At the current `0.1.0-SNAPSHOT` stage, build artifacts are expected to come from source builds in this repository.

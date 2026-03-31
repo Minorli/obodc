@@ -83,7 +83,7 @@ tools/scripts/nohup-start-odc.sh
 `0.1.0-SNAPSHOT` 仍然是 fork 启动阶段，目前还没有发布 fork 自有的官方镜像和安装包。
 当前阶段请以源码构建为主。
 
-- 打包说明：[distribution/README.md](distribution/README.md)
+- 打包说明：[build/packaging/README.md](build/packaging/README.md)
 - 后端开发指南：[docs/zh-CN/DEVELOPER_GUIDE.md](docs/zh-CN/DEVELOPER_GUIDE.md)
 - 贡献指南：[docs/zh-CN/CONTRIBUTION.md](docs/zh-CN/CONTRIBUTION.md)
 - 上游跟踪策略：[docs/UPSTREAM_TRACKING.md](docs/UPSTREAM_TRACKING.md)

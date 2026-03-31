@@ -275,22 +275,22 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../script/start-odc.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/start-odc.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/start-job.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/start-job.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/start-supervisor.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/start-supervisor.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/kill-odc.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/kill-odc.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/nohup-start-odc.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/nohup-start-odc.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/generate-odc-ssl-certificate.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/generate-odc-ssl-certificate.sh</location>
                                         </source>
                                         <source>
                                             <location>${project.basedir}/../../third_party/binaries/obclient.tar.gz</location>
@@ -316,10 +316,10 @@
                                             <location>target/classes/log4j2-task.xml</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/docker/resources/nginx.conf.template</location>
+                                            <location>${project.basedir}/../../build/packaging/docker/resources/nginx.conf.template</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/docker/resources/nginx.conf.https.template</location>
+                                            <location>${project.basedir}/../../build/packaging/docker/resources/nginx.conf.https.template</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -328,7 +328,7 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/plugins</location>
+                                            <location>${project.basedir}/../../build/output/extensions/plugins</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -337,7 +337,7 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/starters</location>
+                                            <location>${project.basedir}/../../build/output/extensions/starters</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -346,7 +346,7 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/modules</location>
+                                            <location>${project.basedir}/../../build/output/extensions/modules</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -418,22 +418,22 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../script/start-odc.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/start-odc.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/start-job.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/start-job.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/start-supervisor.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/start-supervisor.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/kill-odc.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/kill-odc.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/nohup-start-odc.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/nohup-start-odc.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../script/generate-odc-ssl-certificate.sh</location>
+                                            <location>${project.basedir}/../../tools/scripts/generate-odc-ssl-certificate.sh</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -456,10 +456,10 @@
                                             <location>target/classes/log4j2-task.xml</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/docker/resources/nginx.conf.template</location>
+                                            <location>${project.basedir}/../../build/packaging/docker/resources/nginx.conf.template</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/docker/resources/nginx.conf.https.template</location>
+                                            <location>${project.basedir}/../../build/packaging/docker/resources/nginx.conf.https.template</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -468,7 +468,7 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/plugins</location>
+                                            <location>${project.basedir}/../../build/output/extensions/plugins</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -477,7 +477,7 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/starters</location>
+                                            <location>${project.basedir}/../../build/output/extensions/starters</location>
                                         </source>
                                     </sources>
                                 </mapping>
@@ -486,7 +486,7 @@
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
-                                            <location>${project.basedir}/../../distribution/modules</location>
+                                            <location>${project.basedir}/../../build/output/extensions/modules</location>
                                         </source>
                                     </sources>
                                 </mapping>

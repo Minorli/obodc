@@ -121,6 +121,8 @@
 /.github/                    @MarkPotato777 @LioRoger
 /builds/                     @MarkPotato777 @LioRoger
 /build/config/               @MarkPotato777 @LioRoger
+/build/packaging/            @MarkPotato777 @LioRoger
+/build/output/               @MarkPotato777 @LioRoger
 /script/                     @MarkPotato777 @LioRoger
 /distribution/               @MarkPotato777 @LioRoger
 /server/odc-test/            @MarkPotato777 @LioRoger

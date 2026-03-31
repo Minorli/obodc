@@ -1444,7 +1444,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete dir="${project.basedir}/distribution/plugins"/>
+                                <delete dir="${project.basedir}/build/output/extensions/plugins"/>
                             </target>
                         </configuration>
                     </execution>
@@ -1456,7 +1456,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete dir="${project.basedir}/distribution/starters"/>
+                                <delete dir="${project.basedir}/build/output/extensions/starters"/>
                             </target>
                         </configuration>
                     </execution>
@@ -1468,7 +1468,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete dir="${project.basedir}/distribution/modules"/>
+                                <delete dir="${project.basedir}/build/output/extensions/modules"/>
                             </target>
                         </configuration>
                     </execution>

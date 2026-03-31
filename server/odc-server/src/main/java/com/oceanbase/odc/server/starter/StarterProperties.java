@@ -41,7 +41,8 @@ public class StarterProperties {
 
     static {
         STARTER_PLUGIN_DIRS.add(Paths.get("").toAbsolutePath().normalize().resolve("starters"));
-        // set plugins path as currentWorkdir/distribution/plugins
+        STARTER_PLUGIN_DIRS.add(Paths.get("").toAbsolutePath().normalize().resolve("build/output/extensions/starters"));
+        // compatibility path during repository migration
         STARTER_PLUGIN_DIRS.add(Paths.get("").toAbsolutePath().normalize().resolve("distribution/starters"));
         // 默认安装目录
         STARTER_PLUGIN_DIRS.add(new File("/opt/odc/starters").toPath());
