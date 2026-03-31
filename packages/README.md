@@ -2,7 +2,7 @@
 
 Canonical home for reusable source packages.
 
-Planned mappings:
+Current state:
 
-- `packages/backend/*` for shared backend modules
-- `packages/libs/*` for local reusable libraries such as `db-browser` and `ob-sql-parser`
+- `packages/libs/*` now owns local reusable libraries such as `db-browser` and `ob-sql-parser`
+- `packages/backend/*` remains the next migration target for shared backend modules

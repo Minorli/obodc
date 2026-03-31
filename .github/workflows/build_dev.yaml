@@ -61,7 +61,7 @@ jobs:
       - name: Install ob-sql-parser
         run: |
           echo "Start install ob-sql-parser"
-          pushd libs/ob-sql-parser
+          pushd packages/libs/ob-sql-parser
           echo "Current dir is "`pwd`
           mvn clean install -Dmaven.test.skip=true
           echo "Install ob-sql-parser success"
@@ -69,7 +69,7 @@ jobs:
       - name: Install db-browser
         run: |
           echo "Start install db-browser"
-          pushd libs/db-browser
+          pushd packages/libs/db-browser
           echo "Current dir is "`pwd`
           mvn clean install -Dmaven.test.skip=true
           echo "Install db-browser success"

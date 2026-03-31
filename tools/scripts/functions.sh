@@ -322,7 +322,7 @@ function build_module() {
 # local install libs
 function maven_install_libs() {
     local maven_extra_args=$@
-    pushd "${ODC_DIR}/libs" || return 1
+    pushd "${ODC_DIR}/packages/libs" || return 1
 
     func_echo "maven install libs ..."
 

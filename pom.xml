@@ -1500,7 +1500,7 @@ limitations under the License.
                         <include>src/test/java/**/*.java</include>
                     </includes>
                     <excludes>
-                        <exclude>libs/**</exclude>
+                        <exclude>packages/libs/**</exclude>
                     </excludes>
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>

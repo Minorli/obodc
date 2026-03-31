@@ -658,9 +658,9 @@ public class MySQLNoLessThan5700SchemaAccessor implements DBSchemaAccessor {
     protected void fillPrecisionAndScale(DBTableColumn column) {
         String typeName = column.getTypeName();
         /*
-        In higher mysql version(from 5.7.5),Year's precision is set to default 4 in ddl sql and table construction compare,
-        especially when columntype=yaer(2),the year's precision will be set 2
-        */
+         * In higher mysql version(from 5.7.5),Year's precision is set to default 4 in ddl sql and table
+         * construction compare, especially when columntype=yaer(2),the year's precision will be set 2
+         */
         if ("year".equalsIgnoreCase(typeName)) {
             column.setPrecision(4L);
         }

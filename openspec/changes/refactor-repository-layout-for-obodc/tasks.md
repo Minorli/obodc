@@ -17,7 +17,7 @@
 ## 4. Phase 3 Java Module Migration
 - [x] 4.1 Move app entry modules under `apps/`
 - [ ] 4.2 Move shared backend modules under `packages/backend/`
-- [ ] 4.3 Move local reusable libraries under `packages/libs/`
+- [x] 4.3 Move local reusable libraries under `packages/libs/`
 - [x] 4.4 Move plugins, starters, and modules under `extensions/`
 - [x] 4.5 Move integration tests and test scripts under `tests/`
 

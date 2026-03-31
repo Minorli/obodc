@@ -171,7 +171,7 @@ jobs:
         if: ${{ github.event.inputs.install_ob_sql_parser == 'true'}}
         run: |
           echo "Start install ob-sql-parser"
-          pushd libs/ob-sql-parser
+          pushd packages/libs/ob-sql-parser
           echo "Current dir is "`pwd`
           mvn clean install -Dmaven.test.skip=true
           echo "Install ob-sql-parser success"
@@ -180,7 +180,7 @@ jobs:
         if: ${{ github.event.inputs.install_db_browser == 'true'}}
         run: |
           echo "Start install db-browser"
-          pushd libs/db-browser
+          pushd packages/libs/db-browser
           echo "Current dir is "`pwd`
           mvn clean install -Dmaven.test.skip=true
           echo "Install db-browser success"

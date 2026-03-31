@@ -6,6 +6,8 @@
 # libs
 /libs/db-browser/                   @PeachThinking @MarkPotato777
 /libs/ob-sql-parser/                @PeachThinking @MarkPotato777
+/packages/libs/db-browser/          @PeachThinking @MarkPotato777
+/packages/libs/ob-sql-parser/       @PeachThinking @MarkPotato777
 
 # 3rd-party
 /server/3rd-party/                  @MarkPotato777 @LioRoger
