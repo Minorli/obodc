@@ -92,6 +92,8 @@ public class DBSchemaIndexService {
     private DBObjectRepository dbObjectRepository;
     @Autowired
     private DBSchemaSyncTaskManager dbSchemaSyncTaskManager;
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
 
     private static final int MAX_SEARCH_SIZE = 5000;
     private static final int MAX_RETURN_SIZE_PER_TYPE = 200;
@@ -201,20 +203,21 @@ public class DBSchemaIndexService {
 
     public Boolean syncCurrentUserVisibleDatabases() {
         this.databaseService.refreshExpiredPendingDBObjectStatus();
+        metadataRuntimeManager.assertBulkVisibleSyncAllowed();
+        java.util.Collection<Database> databases;
         long userId = authenticationFacade.currentUserId();
         if (authenticationFacade.currentOrganization().getType() == OrganizationType.TEAM) {
             Set<Long> joinedProjectIds = projectService.getMemberProjectIds(userId);
             if (CollectionUtils.isEmpty(joinedProjectIds)) {
                 return true;
             }
-            dbSchemaSyncTaskManager
-                    .submitTaskByDatabases(
-                            databaseService.listExistAndNotPendingDatabasesByProjectIdIn(joinedProjectIds));
+            databases = databaseService.listExistAndNotPendingDatabasesByProjectIdIn(joinedProjectIds);
         } else {
-            dbSchemaSyncTaskManager
-                    .submitTaskByDatabases(databaseService.listExistAndNotPendingDatabasesByOrganizationId(
-                            authenticationFacade.currentOrganizationId()));
+            databases = databaseService.listExistAndNotPendingDatabasesByOrganizationId(
+                    authenticationFacade.currentOrganizationId());
         }
+        metadataRuntimeManager.assertManualSyncSize("current-user visible databases", databases.size());
+        dbSchemaSyncTaskManager.submitTaskByDatabases(databases);
         return true;
     }
 
@@ -222,6 +225,8 @@ public class DBSchemaIndexService {
         this.databaseService.refreshExpiredPendingDBObjectStatus();
         Set<Database> databases = new HashSet<>();
         if (req.getResourceType() == ResourceType.ODC_CONNECTION) {
+            int existingDatabaseCount = databaseService.listExistDatabasesByConnectionId(req.getResourceId()).size();
+            metadataRuntimeManager.assertManualSyncSize("datasource " + req.getResourceId(), existingDatabaseCount);
             try {
                 databaseService.internalSyncDataSourceSchemas(req.getResourceId());
             } catch (InterruptedException ex) {
@@ -266,6 +271,10 @@ public class DBSchemaIndexService {
         }
         databases.removeIf(e -> Boolean.FALSE.equals(e.getExisted())
                 || e.getObjectSyncStatus() == DBObjectSyncStatus.PENDING);
+        if (CollectionUtils.isEmpty(databases)) {
+            return true;
+        }
+        metadataRuntimeManager.assertManualSyncSize(req.getResourceType().name(), databases.size());
         dbSchemaSyncTaskManager.submitTaskByDatabases(databases);
         return true;
     }

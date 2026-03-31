@@ -57,6 +57,7 @@ import com.oceanbase.odc.service.connection.model.ConnectionConfig;
 import com.oceanbase.odc.service.connection.model.ConnectionPreviewBatchImportResp;
 import com.oceanbase.odc.service.connection.model.GenerateConnectionStringReq;
 import com.oceanbase.odc.service.connection.model.QueryConnectionParams;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.flow.model.BinaryDataResult;
 
 import io.swagger.annotations.ApiOperation;
@@ -80,6 +81,9 @@ public class DataSourceController {
 
     @Autowired
     private ConnectionBatchImportPreviewer connectionBatchImportPreviewer;
+
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
 
     @Value("${odc.integration.bastion.enabled:false}")
     private boolean bastionEnabled;
@@ -138,6 +142,7 @@ public class DataSourceController {
             @RequestParam(required = false, name = "hostPort") String hostPort,
             @RequestParam(required = false, name = "name") String name,
             @PageableDefault(size = Integer.MAX_VALUE, sort = {"id"}, direction = Direction.DESC) Pageable pageable) {
+        Pageable safePageable = metadataRuntimeManager.capDatasourcePage(pageable);
         if (Objects.nonNull(projectId)) {
             return Responses.paginated(connectionService.listByProjectId(projectId, basic));
         }
@@ -156,7 +161,8 @@ public class DataSourceController {
                 .name(name)
                 .ids(ids)
                 .build();
-        return Responses.paginated(connectionService.list(params, pageable));
+        return Responses.paginated(basic ? connectionService.listBasic(params, safePageable)
+                : connectionService.list(params, safePageable));
     }
 
     @ApiOperation(value = "listDatabases", notes = "List databases by DataSourceId")
@@ -166,8 +172,10 @@ public class DataSourceController {
             @RequestParam(required = false, name = "existed") Boolean existed,
             @RequestParam(required = false, name = "belongsToProject") Boolean belongsToProject,
             @PageableDefault(size = Integer.MAX_VALUE, sort = {"id"}, direction = Direction.DESC) Pageable pageable) {
+        Pageable safePageable = metadataRuntimeManager.capDatabasePage(pageable);
         return Responses
-                .paginated(databaseService.listDatabasesByDataSource(id, name, existed, belongsToProject, pageable));
+                .paginated(databaseService.listDatabasesByDataSource(id, name, existed, belongsToProject,
+                        safePageable));
     }
 
 

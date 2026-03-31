@@ -62,6 +62,7 @@ import com.oceanbase.odc.service.connection.table.model.QueryTableParams;
 import com.oceanbase.odc.service.connection.table.model.Table;
 import com.oceanbase.odc.service.db.DBMaterializedViewService;
 import com.oceanbase.odc.service.db.schema.DBSchemaSyncService;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.db.schema.syncer.DBSchemaSyncer;
 import com.oceanbase.odc.service.db.schema.syncer.object.DBExternalTableSyncer;
 import com.oceanbase.odc.service.db.schema.syncer.object.DBMVSyncer;
@@ -78,6 +79,7 @@ import com.oceanbase.tools.dbbrowser.model.DBObjectIdentity;
 import com.oceanbase.tools.dbbrowser.model.DBObjectType;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
@@ -87,6 +89,7 @@ import lombok.NonNull;
  */
 @Service
 @Validated
+@Slf4j
 public class TableService {
 
     @Autowired
@@ -121,6 +124,9 @@ public class TableService {
 
     @Autowired
     private DBResourcePermissionHelper dbResourcePermissionHelper;
+
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
 
     @Transactional(rollbackFor = Exception.class)
     @SkipAuthorize("permission check inside")
@@ -191,14 +197,10 @@ public class TableService {
             ConnectionConfig dataSource, List<Table> tables,
             Connection conn, DBObjectType tableType, Set<String> latestTableNames)
             throws InterruptedException, SQLException {
-        if (authenticationFacade.currentUser().getOrganizationType() == OrganizationType.INDIVIDUAL) {
-            tables.addAll(latestTableNames.stream().map(tableName -> {
-                Table table = new Table();
-                table.setName(tableName);
-                table.setAuthorizedPermissionTypes(new HashSet<>(DatabasePermissionType.all()));
-                table.setType(tableType);
-                return table;
-            }).collect(Collectors.toList()));
+        if (authenticationFacade.currentUser().getOrganizationType() == OrganizationType.INDIVIDUAL
+                || !params.getIncludePermittedAction()) {
+            tables.addAll(buildLiveTables(database, tableType, latestTableNames,
+                    authenticationFacade.currentUser().getOrganizationType() == OrganizationType.INDIVIDUAL));
         } else {
             List<DBObjectEntity> existTables =
                     dbObjectRepository.findByDatabaseIdAndTypeOrderByNameAsc(params.getDatabaseId(),
@@ -207,7 +209,11 @@ public class TableService {
                     existTables.stream().map(DBObjectEntity::getName).collect(Collectors.toSet());
             if (latestTableNames.size() != existTableNames.size()
                     || !existTableNames.containsAll(latestTableNames)) {
-                if (Objects.isNull(conn)) {
+                if (!metadataRuntimeManager.isRequestTriggeredSyncAllowed()) {
+                    log.info(
+                            "Skip request-triggered metadata sync, databaseId={}, objectType={}, latestSize={}, cacheSize={}",
+                            params.getDatabaseId(), tableType, latestTableNames.size(), existTableNames.size());
+                } else if (Objects.isNull(conn)) {
                     /**
                      * This logic applies specifically to the scenario where a {@link ConnectionSession} exists. In that
                      * scenario, need to create a new connection only when the table/view in the metadata database is
@@ -226,8 +232,27 @@ public class TableService {
                         dbObjectRepository.findByDatabaseIdAndTypeOrderByNameAsc(params.getDatabaseId(),
                                 tableType);
             }
-            tables.addAll(entitiesToModels(existTables, database, params.getIncludePermittedAction()));
+            tables.addAll(metadataRuntimeManager.capBrowseItems(
+                    entitiesToModels(existTables, database, params.getIncludePermittedAction())));
         }
+    }
+
+    private List<Table> buildLiveTables(Database database, DBObjectType tableType, Set<String> latestTableNames,
+            boolean grantAllPermissions) {
+        List<String> sortedNames = latestTableNames.stream()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
+        return metadataRuntimeManager.capBrowseItems(sortedNames).stream().map(tableName -> {
+            Table table = new Table();
+            table.setName(tableName);
+            table.setDatabase(database);
+            table.setOrganizationId(database.getOrganizationId());
+            table.setType(tableType);
+            if (grantAllPermissions) {
+                table.setAuthorizedPermissionTypes(new HashSet<>(DatabasePermissionType.all()));
+            }
+            return table;
+        }).collect(Collectors.toList());
     }
 
     private DBSchemaSyncer getSyncerByTableType(@NotNull DBObjectType tableType) {

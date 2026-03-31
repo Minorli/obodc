@@ -42,6 +42,7 @@ import com.oceanbase.odc.service.db.model.AllTablesAndViews;
 import com.oceanbase.odc.service.db.model.DBViewResponse;
 import com.oceanbase.odc.service.db.model.DatabaseAndTables;
 import com.oceanbase.odc.service.db.model.DatabaseAndViews;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.tools.dbbrowser.model.DBObjectIdentity;
 import com.oceanbase.tools.dbbrowser.model.DBView;
@@ -57,18 +58,22 @@ public class DBViewService {
     @Autowired
     private DBTableService dbTableService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     public List<String> listSystemViews(@NonNull ConnectionSession session, String databaseName) {
         DBSchemaAccessor schemaAccessor = DBSchemaAccessors.create(session);
         return schemaAccessor.showSystemViews(databaseName);
     }
 
     public List<DBView> list(ConnectionSession connectionSession, String dbName) {
-        return connectionSession.getSyncJdbcExecutor(
+        List<DBView> views = connectionSession.getSyncJdbcExecutor(
                 ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute((ConnectionCallback<List<DBObjectIdentity>>) con -> getDBViewExtensionPoint(
                         connectionSession).list(con, dbName))
                 .stream().map(identity -> DBView.of(identity.getSchemaName(), identity.getName()))
                 .collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(views);
     }
 
     public DBViewResponse detail(ConnectionSession connectionSession, String schemaName, String viewName) {
@@ -97,13 +102,15 @@ public class DBViewService {
                     .filter(name -> !StringUtils.endsWithIgnoreCase(name, OdcConstants.VALIDATE_DDL_TABLE_POSTFIX))
                     .collect(Collectors.toList());
             DatabaseAndTables databaseAndTables = new DatabaseAndTables(
-                    ConnectionSessionUtil.getCurrentSchema(connectionSession), names);
+                    ConnectionSessionUtil.getCurrentSchema(connectionSession),
+                    metadataRuntimeManager.capLegacyList(names));
             tables.add(databaseAndTables);
         } else {
             tables = dbTableService.generateDatabaseAndTables(accessor, tableNameLike, existedDatabases);
         }
-        allResult.setTables(tables);
-        allResult.setViews(generateDatabaseAndViews(accessor, tableNameLike, existedDatabases));
+        allResult.setTables(metadataRuntimeManager.capLegacyList(tables));
+        allResult.setViews(metadataRuntimeManager.capLegacyList(
+                generateDatabaseAndViews(accessor, tableNameLike, existedDatabases)));
         return allResult;
     }
 
@@ -120,8 +127,9 @@ public class DBViewService {
             schema2ExistedViews.computeIfAbsent(item.getSchemaName(), t -> new ArrayList<>()).add(item.getName());
         });
         return existedDatabases.stream()
-                .map(schema -> new DatabaseAndViews(schema, Optional.ofNullable(schema2ExistedViews.get(schema))
-                        .orElse(Collections.emptyList())))
+                .map(schema -> new DatabaseAndViews(schema,
+                        metadataRuntimeManager.capLegacyList(Optional.ofNullable(schema2ExistedViews.get(schema))
+                                .orElse(Collections.emptyList()))))
                 .collect(Collectors.toList());
     }
 

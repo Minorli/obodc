@@ -28,6 +28,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +49,7 @@ import com.oceanbase.odc.service.db.model.DatabaseAndTables;
 import com.oceanbase.odc.service.db.model.GenerateTableDDLResp;
 import com.oceanbase.odc.service.db.model.GenerateUpdateTableDDLReq;
 import com.oceanbase.odc.service.db.model.UpdateTableDdlCheck;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.odc.service.sqlcheck.SqlCheckUtil;
 import com.oceanbase.tools.dbbrowser.DBBrowser;
@@ -67,6 +69,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @SkipAuthorize("inside connect session")
 public class DBTableService {
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     /**
      * show tables from schemaName like tableName
      *
@@ -122,7 +127,7 @@ public class DBTableService {
     }
 
     public List<DBTable> listTables(@NotNull ConnectionSession connectionSession, String schemaName) {
-        return connectionSession.getSyncJdbcExecutor(ConnectionSessionConstants.BACKEND_DS_KEY)
+        List<DBTable> tables = connectionSession.getSyncJdbcExecutor(ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute((ConnectionCallback<List<DBObjectIdentity>>) con -> getTableExtensionPoint(connectionSession)
                         .list(con, schemaName, DBObjectType.TABLE))
                 .stream().map(item -> {
@@ -131,6 +136,7 @@ public class DBTableService {
                     table.setSchemaName(schemaName);
                     return table;
                 }).collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(tables);
     }
 
     public GenerateTableDDLResp generateCreateDDL(@NotNull ConnectionSession session, @NotNull DBTable table) {
@@ -246,10 +252,12 @@ public class DBTableService {
         existedTablesIdentities.forEach(item -> {
             schema2ExistedTables.computeIfAbsent(item.getSchemaName(), t -> new ArrayList<>()).add(item.getName());
         });
-        return existedDatabases.stream()
-                .map(schema -> new DatabaseAndTables(schema, Optional.ofNullable(schema2ExistedTables.get(schema))
-                        .orElse(Collections.emptyList())))
+        List<DatabaseAndTables> databaseAndTables = existedDatabases.stream()
+                .map(schema -> new DatabaseAndTables(schema,
+                        metadataRuntimeManager.capLegacyList(Optional.ofNullable(schema2ExistedTables.get(schema))
+                                .orElse(Collections.emptyList()))))
                 .collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(databaseAndTables);
     }
 
     private TableExtensionPoint getTableExtensionPoint(@NotNull ConnectionSession connectionSession) {

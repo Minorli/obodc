@@ -27,6 +27,7 @@ import com.oceanbase.odc.core.session.ConnectionSession;
 import com.oceanbase.odc.core.session.ConnectionSessionConstants;
 import com.oceanbase.odc.plugin.schema.api.TypeExtensionPoint;
 import com.oceanbase.odc.service.common.model.ResourceSql;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.odc.service.session.ConnectConsoleService;
 import com.oceanbase.tools.dbbrowser.model.DBPLObjectIdentity;
@@ -44,8 +45,11 @@ public class DBTypeService {
     @Autowired
     private ConnectConsoleService consoleService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     public List<DBType> list(ConnectionSession connectionSession, String dbName) {
-        return connectionSession.getSyncJdbcExecutor(
+        List<DBType> types = connectionSession.getSyncJdbcExecutor(
                 ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute((ConnectionCallback<List<DBPLObjectIdentity>>) con -> getTypeExtensionPoint(connectionSession)
                         .list(con, dbName))
@@ -57,6 +61,7 @@ public class DBTypeService {
                     type.setErrorMessage(item.getErrorMessage());
                     return type;
                 }).collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(types);
     }
 
     public DBType detail(ConnectionSession connectionSession, String schemaName, String typeName) {

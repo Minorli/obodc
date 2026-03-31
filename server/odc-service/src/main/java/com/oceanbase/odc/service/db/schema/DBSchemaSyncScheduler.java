@@ -72,6 +72,9 @@ public class DBSchemaSyncScheduler {
     @Autowired
     private GlobalSearchProperties globalSearchProperties;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     private static final String LOCK_KEY = "db-schema-sync-schedule-lock";
     private static final long LOCK_HOLD_TIME_SECONDS = 10;
 
@@ -120,6 +123,7 @@ public class DBSchemaSyncScheduler {
             }
         }
         Collections.shuffle(dataSources);
+        dataSources = metadataRuntimeManager.capAutoSyncDataSources(dataSources);
         for (ConnectionConfig dataSource : dataSources) {
             try {
                 dbSchemaSyncTaskManager.submitTaskByDataSource(dataSource);

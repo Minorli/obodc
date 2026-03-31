@@ -28,6 +28,7 @@ import com.oceanbase.odc.core.session.ConnectionSessionConstants;
 import com.oceanbase.odc.core.session.ConnectionSessionUtil;
 import com.oceanbase.odc.plugin.schema.api.TriggerExtensionPoint;
 import com.oceanbase.odc.service.db.model.DBTriggerReq;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.odc.service.session.ConnectConsoleService;
 import com.oceanbase.tools.dbbrowser.model.DBPLObjectIdentity;
@@ -48,8 +49,11 @@ public class DBTriggerService {
     @Autowired
     private ConnectConsoleService consoleService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     public List<DBTrigger> list(ConnectionSession connectionSession, String dbName) {
-        return connectionSession.getSyncJdbcExecutor(
+        List<DBTrigger> triggers = connectionSession.getSyncJdbcExecutor(
                 ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute((ConnectionCallback<List<DBPLObjectIdentity>>) con -> getTriggerExtensionPoint(
                         connectionSession).list(con, dbName))
@@ -62,6 +66,7 @@ public class DBTriggerService {
                     trigger.setStatus(item.getStatus());
                     return trigger;
                 }).collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(triggers);
     }
 
     public DBTrigger detail(ConnectionSession connectionSession, String schemaName, String triggerName) {

@@ -46,6 +46,7 @@ import com.oceanbase.odc.service.connection.database.model.ModifyDatabaseOwnerRe
 import com.oceanbase.odc.service.connection.database.model.ModifyDatabaseRemarkReq;
 import com.oceanbase.odc.service.connection.database.model.QueryDatabaseParams;
 import com.oceanbase.odc.service.connection.database.model.TransferDatabasesReq;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -63,6 +64,9 @@ public class DataBaseController {
 
     @Autowired
     private DatabaseSyncManager databaseSyncManager;
+
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
 
     @ApiOperation(value = "getDatabase", notes = "Detail a database")
     @RequestMapping(value = "/databases/{id:[\\d]+}", method = RequestMethod.GET)
@@ -90,6 +94,7 @@ public class DataBaseController {
                     name = "includesPermittedAction") Boolean includesPermittedAction,
             @PageableDefault(size = Integer.MAX_VALUE, sort = {"type", "name"},
                     direction = Direction.ASC) Pageable pageable) {
+        Pageable safePageable = metadataRuntimeManager.capDatabasePage(pageable);
         QueryDatabaseParams params = QueryDatabaseParams.builder()
                 .dataSourceId(dataSourceId)
                 .types(types)
@@ -103,7 +108,7 @@ public class DataBaseController {
                 .containsUnassigned(containsUnassigned)
                 .includesPermittedAction(includesPermittedAction)
                 .projectId(projectId).build();
-        return Responses.paginated(databaseService.list(params, pageable));
+        return Responses.paginated(databaseService.list(params, safePageable));
     }
 
 

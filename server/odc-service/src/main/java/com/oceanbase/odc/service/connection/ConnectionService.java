@@ -116,6 +116,7 @@ import com.oceanbase.odc.service.connection.model.QueryConnectionParams;
 import com.oceanbase.odc.service.connection.ssl.ConnectionSSLAdaptor;
 import com.oceanbase.odc.service.connection.util.ConnectionIdList;
 import com.oceanbase.odc.service.connection.util.ConnectionMapper;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.db.schema.syncer.DBSchemaSyncProperties;
 import com.oceanbase.odc.service.encryption.EncryptionFacade;
 import com.oceanbase.odc.service.flow.model.BinaryDataResult;
@@ -222,6 +223,9 @@ public class ConnectionService {
 
     @Autowired
     private DBSchemaSyncProperties dbSchemaSyncProperties;
+
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
 
     @Autowired
     private TransactionTemplate txTemplate;
@@ -626,6 +630,41 @@ public class ConnectionService {
         return PageAndStats.of(connections, stats);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @SkipAuthorize("permission check inside")
+    public PageAndStats<ConnectionConfig> listBasic(@Valid QueryConnectionParams params, @NotNull Pageable pageable) {
+        ConnectionIdList connectionIdList;
+        User user = authenticationFacade.currentUser();
+        Long userId = user.getId();
+        if (params.getRelatedUserId() != null) {
+            Permission requiredPermission =
+                    securityManager.getPermissionByActions(new DefaultSecurityResource(params.getRelatedUserId() + "",
+                            ResourceType.ODC_USER.code()), Collections.singletonList("read"));
+            if (!securityManager.isPermitted(requiredPermission)) {
+                throw new AccessDeniedException();
+            }
+            userId = params.getRelatedUserId();
+        }
+        connectionIdList = getConnectionIdList(userId, params.getMinPrivilege(), params.getPermittedActions());
+        if (CollectionUtils.isEmpty(connectionIdList.getConnectionIds())) {
+            return PageAndStats.empty();
+        }
+        params.setIds(
+                connectionIdList.getConnectionIds().stream().filter(Objects::nonNull).collect(Collectors.toSet()));
+        Page<ConnectionEntity> entities = innerListEntities(params, metadataRuntimeManager.capDatasourcePage(pageable));
+        List<ConnectionConfig> connections = toBasicConnections(entities.getContent());
+        Set<String> clusterNames = connections.stream()
+                .filter(c -> StringUtils.isNotEmpty(c.getClusterName()))
+                .map(ConnectionConfig::getClusterName).collect(Collectors.toSet());
+        Set<String> tenantNames = connections.stream()
+                .filter(c -> StringUtils.isNotEmpty(c.getTenantName()))
+                .map(ConnectionConfig::getTenantName).collect(Collectors.toSet());
+        Stats stats = new Stats()
+                .andDistinct("tenantName", tenantNames)
+                .andDistinct("clusterName", clusterNames);
+        return PageAndStats.of(new PageImpl<>(connections, entities.getPageable(), entities.getTotalElements()), stats);
+    }
+
     @PreAuthenticate(actions = "update", resourceType = "ODC_CONNECTION", indexOfIdParam = 0)
     public ConnectionConfig update(@NotNull Long id, @NotNull @Valid ConnectionConfig connection) {
         return updateConnectionConfig(id, connection, true);
@@ -928,6 +967,14 @@ public class ConnectionService {
     }
 
     private Page<ConnectionConfig> innerList(@NotNull QueryConnectionParams params, @NotNull Pageable pageable) {
+        Page<ConnectionEntity> entities = innerListEntities(params, pageable);
+        List<ConnectionConfig> models = entitiesToModels(entities.getContent(), currentOrganizationId(), true, true);
+        fullFillAttributes(models);
+        return new PageImpl<>(models, entities.getPageable(), entities.getTotalElements());
+    }
+
+    private Page<ConnectionEntity> innerListEntities(@NotNull QueryConnectionParams params,
+            @NotNull Pageable pageable) {
         Specification<ConnectionEntity> spec = Specification
                 .where(ConnectionSpecs.organizationIdEqual(authenticationFacade.currentOrganizationId()));
         String[] hostPort = getHostPort(params.getHostPort());
@@ -958,10 +1005,35 @@ public class ConnectionService {
         spec = spec.and(ConnectionSpecs.sort(pageable.getSort()));
         Pageable page = pageable.equals(Pageable.unpaged()) ? pageable
                 : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-        Page<ConnectionEntity> entities = this.repository.findAll(spec, page);
-        List<ConnectionConfig> models = entitiesToModels(entities.getContent(), currentOrganizationId(), true, true);
-        fullFillAttributes(models);
-        return new PageImpl<>(models, page, entities.getTotalElements());
+        return this.repository.findAll(spec, page);
+    }
+
+    private List<ConnectionConfig> toBasicConnections(@NonNull List<ConnectionEntity> entities) {
+        List<Long> environmentIds = entities.stream()
+                .map(ConnectionEntity::getEnvironmentId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<Long, Environment> environmentMap = environmentService.getByIdIn(environmentIds).stream()
+                .collect(Collectors.toMap(Environment::getId, environment -> environment));
+        return entities.stream().map(e -> {
+            ConnectionConfig c = new ConnectionConfig();
+            Environment environment = environmentMap.getOrDefault(e.getEnvironmentId(), null);
+            c.setId(e.getId());
+            c.setName(e.getName());
+            c.setType(e.getType());
+            c.setHost(e.getHost());
+            c.setPort(e.getPort());
+            c.setUsername(e.getUsername());
+            c.setTenantName(e.getTenantName());
+            c.setClusterName(e.getClusterName());
+            c.setEnabled(e.getEnabled());
+            if (environment != null) {
+                c.setEnvironmentName(environment.getName());
+                c.setEnvironmentStyle(environment.getStyle());
+            }
+            return c;
+        }).collect(Collectors.toList());
     }
 
     private String[] getHostPort(String hostPort) {

@@ -27,6 +27,7 @@ import com.oceanbase.odc.core.session.ConnectionSession;
 import com.oceanbase.odc.core.session.ConnectionSessionConstants;
 import com.oceanbase.odc.plugin.schema.api.FunctionExtensionPoint;
 import com.oceanbase.odc.service.common.model.ResourceSql;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.odc.service.session.ConnectConsoleService;
 import com.oceanbase.tools.dbbrowser.model.DBFunction;
@@ -40,8 +41,11 @@ public class DBFunctionService {
     @Autowired
     private ConnectConsoleService consoleService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     public List<DBFunction> list(ConnectionSession connectionSession, String dbName) {
-        return connectionSession.getSyncJdbcExecutor(
+        List<DBFunction> functions = connectionSession.getSyncJdbcExecutor(
                 ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute((ConnectionCallback<List<DBPLObjectIdentity>>) con -> getFunctionExtensionPoint(
                         connectionSession).list(con, dbName))
@@ -54,6 +58,7 @@ public class DBFunctionService {
                             return function;
                         })
                 .collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(functions);
     }
 
     public DBFunction detail(ConnectionSession connectionSession, String dbName, String funName) {

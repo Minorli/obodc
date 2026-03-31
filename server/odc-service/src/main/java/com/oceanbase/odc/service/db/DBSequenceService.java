@@ -27,6 +27,7 @@ import com.oceanbase.odc.core.session.ConnectionSession;
 import com.oceanbase.odc.core.session.ConnectionSessionConstants;
 import com.oceanbase.odc.plugin.schema.api.SequenceExtensionPoint;
 import com.oceanbase.odc.service.common.model.ResourceSql;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.odc.service.session.ConnectConsoleService;
 import com.oceanbase.tools.dbbrowser.model.DBObjectIdentity;
@@ -40,8 +41,11 @@ public class DBSequenceService {
     @Autowired
     private ConnectConsoleService consoleService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     public List<DBSequence> list(ConnectionSession connectionSession, String dbName) {
-        return connectionSession.getSyncJdbcExecutor(
+        List<DBSequence> sequences = connectionSession.getSyncJdbcExecutor(
                 ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute(
                         (ConnectionCallback<List<DBObjectIdentity>>) con -> getSequenceExtensionPoint(connectionSession)
@@ -51,6 +55,7 @@ public class DBSequenceService {
                     sequence.setName(item.getName());
                     return sequence;
                 }).collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(sequences);
     }
 
     public DBSequence detail(ConnectionSession connectionSession, String schemaName, String sequenceName) {

@@ -26,6 +26,7 @@ import com.oceanbase.odc.core.authority.util.SkipAuthorize;
 import com.oceanbase.odc.core.session.ConnectionSession;
 import com.oceanbase.odc.core.session.ConnectionSessionConstants;
 import com.oceanbase.odc.plugin.schema.api.SynonymExtensionPoint;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.odc.service.session.ConnectConsoleService;
 import com.oceanbase.tools.dbbrowser.model.DBObjectIdentity;
@@ -47,9 +48,12 @@ public class DBSynonymService {
     @Autowired
     private ConnectConsoleService consoleService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     public List<DBSynonym> list(ConnectionSession connectionSession, String dbName,
             DBSynonymType synonymType) {
-        return connectionSession.getSyncJdbcExecutor(
+        List<DBSynonym> synonyms = connectionSession.getSyncJdbcExecutor(
                 ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute((ConnectionCallback<List<DBObjectIdentity>>) con -> getSynonymExtensionPoint(connectionSession)
                         .list(con, dbName, synonymType))
@@ -58,6 +62,7 @@ public class DBSynonymService {
                     synonym.setSynonymName(item.getName());
                     return synonym;
                 }).collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(synonyms);
     }
 
     public String generateCreateSql(@NonNull ConnectionSession session, @NonNull DBSynonym synonym) {

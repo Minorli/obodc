@@ -1,4 +1,14 @@
 # OceanBase Developer Center (ODC) CHANGELOG
+## 0.1.0-SNAPSHOT（2026-03-31）
+
+### Fork 基线
+
+- 基于 OceanBase ODC 公共版本线 `v4.3.4_bp2` 建立 `obodc` fork 主线。
+- 项目版本切换为 `0.1.0-SNAPSHOT`。
+- 初始化了面向大规模元数据场景的 OpenSpec 顶层规范与第一阶段实现。
+- 增加了超大元数据回包保护、请求链路同步风暴保护、危险批量同步保护。
+- 开始以 fork 自有节奏跟踪 upstream 的 PR 与 issue。
+
 ## 4.3.4（2025-05-08）
 
 ### 功能变化

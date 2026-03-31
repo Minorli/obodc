@@ -26,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 import com.oceanbase.odc.service.common.ConditionOnServer;
 import com.oceanbase.odc.service.connection.database.DatabaseSyncManager;
 import com.oceanbase.odc.service.connection.model.ConnectionConfig;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,6 +45,9 @@ public class DatabaseSyncSchedules {
     @Autowired
     private ConnectionService connectionService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     @Scheduled(fixedDelayString = "${odc.connect.database.sync.interval-millis:180000}")
     public void syncDatabases() {
         List<ConnectionConfig> orgDataSources = connectionService.listSyncableDataSources();
@@ -51,6 +55,7 @@ public class DatabaseSyncSchedules {
             return;
         }
         Collections.shuffle(orgDataSources);
+        orgDataSources = metadataRuntimeManager.capAutoSyncDataSources(orgDataSources);
         log.info("Start to sync datasources, size={}", orgDataSources.size());
         for (ConnectionConfig dataSource : orgDataSources) {
             try {

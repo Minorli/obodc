@@ -29,6 +29,7 @@ import com.oceanbase.odc.core.session.ConnectionSessionConstants;
 import com.oceanbase.odc.core.shared.constant.OdcConstants;
 import com.oceanbase.odc.plugin.schema.api.PackageExtensionPoint;
 import com.oceanbase.odc.service.common.model.ResourceSql;
+import com.oceanbase.odc.service.db.schema.MetadataRuntimeManager;
 import com.oceanbase.odc.service.plugin.SchemaPluginUtil;
 import com.oceanbase.odc.service.session.ConnectConsoleService;
 import com.oceanbase.tools.dbbrowser.model.DBPLObjectIdentity;
@@ -42,8 +43,11 @@ public class DBPackageService {
     @Autowired
     private ConnectConsoleService consoleService;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     public List<DBPackage> list(ConnectionSession connectionSession, String dbName) {
-        return connectionSession.getSyncJdbcExecutor(
+        List<DBPackage> packages = connectionSession.getSyncJdbcExecutor(
                 ConnectionSessionConstants.BACKEND_DS_KEY)
                 .execute((ConnectionCallback<List<DBPLObjectIdentity>>) con -> getPackageExtensionPoint(
                         connectionSession).list(con, dbName))
@@ -56,6 +60,7 @@ public class DBPackageService {
                     dbPackage.setStatus(item.getStatus());
                     return dbPackage;
                 }).collect(Collectors.toList());
+        return metadataRuntimeManager.capLegacyList(packages);
     }
 
     public DBPackage detail(ConnectionSession connectionSession, String schemaName, String packageName) {

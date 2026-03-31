@@ -83,6 +83,9 @@ public class DBSchemaSyncTaskManager {
     @Autowired
     private GlobalSearchProperties globalSearchProperties;
 
+    @Autowired
+    private MetadataRuntimeManager metadataRuntimeManager;
+
     @Value("${odc.integration.bastion.enabled:false}")
     private boolean bastionEnabled;
 
@@ -126,6 +129,7 @@ public class DBSchemaSyncTaskManager {
                 && syncProperties.getExcludeSchemas(dataSource.getDialectType()).contains(e.getName())
                 && !bastionEnabled)
                 || e.getObjectSyncStatus() == DBObjectSyncStatus.PENDING);
+        databases = metadataRuntimeManager.capAutoSyncDatabases(databases);
         submitTaskByDatabases(databases);
     }
 
