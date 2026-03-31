@@ -125,7 +125,7 @@ export const ConsoleTextConfig = {
       {
         title: formatMessage({
           id: 'src.page.Console.8F636FA5',
-          defaultMessage: '带你走进 ODC 团队空间的精彩世界',
+          defaultMessage: '带你走进 obodc 团队空间的精彩世界',
         }),
         fragmentIdentifier: '200.common-operations-in-odc-team-space.html',
       },
@@ -147,14 +147,14 @@ export const ConsoleTextConfig = {
       {
         title: formatMessage({
           id: 'src.page.Console.67004EA1',
-          defaultMessage: 'ODC SQL 检查自动识别高危操作',
+          defaultMessage: 'obodc SQL 检查自动识别高危操作',
         }),
         fragmentIdentifier: '500.automatic-detection-of-high-risk-changes.html',
       },
       {
         title: formatMessage({
           id: 'src.page.Console.A0F9F190',
-          defaultMessage: '通过 ODC 实现分库分表的管理和变更',
+          defaultMessage: '通过 obodc 实现分库分表的管理和变更',
         }),
         fragmentIdentifier: '700.implement-management-and-changes-for-database.html',
       },

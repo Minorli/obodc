@@ -63,7 +63,7 @@ export default class ModalHelp extends PureComponent<{
           </div>
           <Space size={18}>
             <img style={{ height: 16 }} src={window.publicPath + 'img/ob_logo.svg'} />
-            <a href="https://github.com/oceanbase/odc" className={styles.github} target="_blank">
+            <a href="https://github.com/Minorli/obodc" className={styles.github} target="_blank">
               <GithubFilled />
             </a>
           </Space>

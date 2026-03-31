@@ -46,7 +46,7 @@ export function openMainWebWindow(mainWindow: BrowserWindow) {
   mainWindow!.loadURL(PathnameStore.getUrl()).catch((e) => {
     log.error('loadURL error', e);
     dialog.showErrorBox(
-      `Open ODC Window Failed`,
+      `Open obodc Window Failed`,
       `Please submit the log to the administrator（${app.getPath('userData')}/logs）`,
     );
     app.quit();

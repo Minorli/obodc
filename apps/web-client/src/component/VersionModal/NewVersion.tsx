@@ -128,7 +128,7 @@ const NewVersion: React.FC<IProps> = () => {
         {
           formatMessage({
             id: 'odc.component.VersionModal.NewVersion.OdcOptimizationUpdate',
-            defaultMessage: '新版本 ODC 优化更新',
+            defaultMessage: '新版本 obodc 优化更新',
           })
 
           /* 新版本 ODC 优化更新 */
@@ -143,7 +143,7 @@ const NewVersion: React.FC<IProps> = () => {
         }
       </div>
       <Space style={{ float: 'right', paddingTop: 5 }}>
-        <a target={'oceanbase_odc_help'} href="https://www.oceanbase.com/product/odc">
+        <a target={'obodc_help'} href="https://github.com/Minorli/obodc/discussions">
           <Space>
             <Icon component={NewOpenSvg} />
             {
