@@ -45,7 +45,7 @@ tools/scripts/build_sqlconsole.sh
 更快的日常循环可以直接针对后端模块：
 
 ```bash
-./mvnw -pl server/odc-service -am test
+./mvnw -pl packages/backend/service -am test
 ```
 
 ## 5. 本地启动
@@ -79,7 +79,7 @@ tools/scripts/nohup-start-odc.sh
 
 ```bash
 ./mvnw test
-./mvnw -pl server/odc-service -am -Dtest=SomeTest test
+./mvnw -pl packages/backend/service -am -Dtest=SomeTest test
 ```
 
 ## 7. 代码格式与 IDE

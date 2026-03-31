@@ -13,16 +13,16 @@
     <description>Fork-owned mainline for a robust OceanBase development workspace.</description>
     <modules>
         <module>server/3rd-party/Libinjection</module>
-        <module>server/odc-test</module>
-        <module>server/odc-common</module>
-        <module>server/odc-core</module>
+        <module>packages/backend/test-support</module>
+        <module>packages/backend/common</module>
+        <module>packages/backend/core</module>
         <module>extensions/plugins</module>
-        <module>server/odc-service</module>
+        <module>packages/backend/service</module>
         <module>apps/server</module>
         <module>extensions/starters</module>
         <module>extensions/modules</module>
         <module>tests/integration</module>
-        <module>server/odc-migrate</module>
+        <module>packages/backend/migrate</module>
     </modules>
 
     <properties>

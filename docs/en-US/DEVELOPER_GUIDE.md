@@ -47,7 +47,7 @@ tools/scripts/build_sqlconsole.sh
 For a faster inner loop:
 
 ```bash
-./mvnw -pl server/odc-service -am test
+./mvnw -pl packages/backend/service -am test
 ```
 
 ## 5. Local Runtime
@@ -81,7 +81,7 @@ Typical commands:
 
 ```bash
 ./mvnw test
-./mvnw -pl server/odc-service -am -Dtest=SomeTest test
+./mvnw -pl packages/backend/service -am -Dtest=SomeTest test
 ```
 
 ## 7. Formatting and IDE

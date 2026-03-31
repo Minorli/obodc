@@ -14,12 +14,15 @@
 
 # common
 /server/odc-common/                 @LioRoger @guowl3
+/packages/backend/common/           @LioRoger @guowl3
 
 # migrate
 /server/odc-migrate/                @MarkPotato777 @LioRoger
+/packages/backend/migrate/          @MarkPotato777 @LioRoger
 
 # core
 /server/odc-core/                   @LioRoger @guowl3
+/packages/backend/core/             @LioRoger @guowl3
 /server/odc-core/**/alarm/          @LuckyPickleZZ
 /server/odc-core/**/authority/      @MarkPotato777
 /server/odc-core/**/datamasking/    @LuckyPickleZZ
@@ -38,6 +41,7 @@
 
 # service common
 /server/odc-service/                                  @LioRoger @guowl3
+/packages/backend/service/                            @LioRoger @guowl3
 /server/odc-service/**/config/                        @LioRoger @guowl3
 /server/odc-service/**/metadb/                        @LioRoger @guowl3
 /server/odc-service/**/service/common/                @LioRoger @MarkPotato777
@@ -151,6 +155,7 @@
 /script/                     @MarkPotato777 @LioRoger
 /distribution/               @MarkPotato777 @LioRoger
 /server/odc-test/            @MarkPotato777 @LioRoger
+/packages/backend/test-support/ @MarkPotato777 @LioRoger
 /server/integration-test/    @MarkPotato777 @LioRoger
 /server/test-script/         @MarkPotato777 @LioRoger
 /tests/integration/          @MarkPotato777 @LioRoger
