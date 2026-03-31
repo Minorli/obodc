@@ -15,7 +15,7 @@
 - [x] 3.4 Update Maven paths, packaging scripts, and CI workflows
 
 ## 4. Phase 3 Java Module Migration
-- [ ] 4.1 Move app entry modules under `apps/`
+- [x] 4.1 Move app entry modules under `apps/`
 - [ ] 4.2 Move shared backend modules under `packages/backend/`
 - [ ] 4.3 Move local reusable libraries under `packages/libs/`
 - [x] 4.4 Move plugins, starters, and modules under `extensions/`

@@ -2,7 +2,7 @@
 
 Canonical home for runnable products and primary application entry modules.
 
-Planned mappings:
+Current state:
 
-- `apps/server` for the backend runtime module currently under `server/odc-server`
-- `apps/web-client` for the frontend workspace currently under `client`
+- `apps/server` now owns the backend runtime module, with `server/odc-server` kept as a compatibility symlink
+- `apps/web-client` is the canonical app entry for the frontend and currently resolves to the `client` submodule path

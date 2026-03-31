@@ -153,6 +153,8 @@
 /server/test-script/         @MarkPotato777 @LioRoger
 /tests/integration/          @MarkPotato777 @LioRoger
 /tests/scripts/              @MarkPotato777 @LioRoger
+/apps/server/                @MarkPotato777 @LioRoger
+/apps/web-client/            @MarkPotato777 @LioRoger
 
 # i18n
 /server/odc-core/src/main/resources/i18n/     @Jane201510 @JessieWuJiexi @LioRoger @MarkPotato777 @guowl3

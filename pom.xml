@@ -18,7 +18,7 @@
         <module>server/odc-core</module>
         <module>extensions/plugins</module>
         <module>server/odc-service</module>
-        <module>server/odc-server</module>
+        <module>apps/server</module>
         <module>extensions/starters</module>
         <module>extensions/modules</module>
         <module>tests/integration</module>

@@ -1,7 +1,7 @@
 # This file contains functions to be used by most or all shell scripts in the script directory.
 
 # constants used in functions.sh
-SQL_CONSOLE_DIR="client"
+SQL_CONSOLE_DIR="apps/web-client"
 NVS_HOME="$HOME/.nvs"
 RPM_DEFAULT_INSTALL_PREFIX="/opt"
 NVS_VERSION="v1.6.0"
@@ -238,7 +238,7 @@ function build_sqlconsole() {
 
     popd
 
-    local backend_static_path="${ODC_DIR}/server/odc-server/src/main/resources/static/"
+    local backend_static_path="${ODC_DIR}/apps/server/src/main/resources/static/"
     if [ ! -d "${backend_static_path}" ]; then
         func_echo "mkdir ${backend_static_path}"
         mkdir -p "${backend_static_path}"
@@ -259,7 +259,7 @@ function fetch_sqlconsole_from_cdn() {
         echo "ODC_CDN_BASE_URL is null"
         return 1
     fi
-    local backend_static_path="${ODC_DIR}/server/odc-server/src/main/resources/static/"
+    local backend_static_path="${ODC_DIR}/apps/server/src/main/resources/static/"
 
     if ! git config -f "${ODC_DIR}/.gitmodules" --get submodule.client.branch; then
         func_echo "check sqlconsole branch name failed"
@@ -401,7 +401,7 @@ function maven_build_rpm() {
     pushd "${ODC_DIR}" || return 2
 
     func_echo "maven build rpm package starting..."
-    if ! mvn ${mvn_extra_args[@]} --file server/odc-server/pom.xml rpm:rpm \
+    if ! mvn ${mvn_extra_args[@]} --file apps/server/pom.xml rpm:rpm \
         -Drpm.prefix=${RPM_DEFAULT_INSTALL_PREFIX} \
         -Drpm.release=${rpm_release}; then
         func_echo "maven build rpm failed"
@@ -418,7 +418,7 @@ function copy_rpm_resources() {
     echo "copy rpm package(s) to build/packaging/docker/resources"
     rm -vf ${ODC_DIR}/build/packaging/docker/resources/odc-*.rpm
     mkdir -p ${ODC_DIR}/build/packaging/docker/resources/
-    mv --verbose ${ODC_DIR}/server/odc-server/target/rpm/odc-server/RPMS/*/odc-*.rpm ${ODC_DIR}/build/packaging/docker/resources/
+    mv --verbose ${ODC_DIR}/apps/server/target/rpm/odc-server/RPMS/*/odc-*.rpm ${ODC_DIR}/build/packaging/docker/resources/
     func_echo "odc server rpm package(s) copied to $(pwd)"
     return $?
 }

@@ -179,7 +179,7 @@ jobs:
         run: |
           echo "Current directory: "`pwd`
           echo "Start build front static resources"
-          pushd client
+          pushd apps/web-client
           echo "Run npm install pnpm -g"
           npm install pnpm@8 -g
           echo "Run pnpm install"
@@ -189,13 +189,13 @@ jobs:
           popd
           echo "Build front static resources success"
           echo "Start copy resources files"
-          static_resources_path="server/odc-server/src/main/resources/static"
+          static_resources_path="apps/server/src/main/resources/static"
           if [ ! -d "${static_resources_path}" ]; then
             echo "mkdir -p ${static_resources_path}"
             mkdir -p "${static_resources_path}"
           fi
           rm --force --recursive --verbose ${static_resources_path}/*
-          cp --force --recursive --verbose client/dist/renderer/* ${static_resources_path}
+          cp --force --recursive --verbose apps/web-client/dist/renderer/* ${static_resources_path}
           echo "Copy resources files success"
       - name: Set release version
         id: set_release_version
@@ -249,12 +249,12 @@ jobs:
           echo "Start build rpm package"
           mvn help:system
           mvn clean install -Dmaven.test.skip=true
-          mvn --file server/odc-server/pom.xml rpm:rpm -Drpm.prefix=/opt
+          mvn --file apps/server/pom.xml rpm:rpm -Drpm.prefix=/opt
           echo "Build rpm package success"
           rm --force --recursive --verbose build/packaging/docker/resources/odc-*.rpm
           mkdir -p build/packaging/docker/resources/
-          mv --verbose server/odc-server/target/rpm/odc-server/RPMS/*/odc-*.rpm build/packaging/docker/resources/
-          mv --verbose server/odc-server/target/*-executable.jar build/output/jars/odc.jar
+          mv --verbose apps/server/target/rpm/odc-server/RPMS/*/odc-*.rpm build/packaging/docker/resources/
+          mv --verbose apps/server/target/*-executable.jar build/output/jars/odc.jar
           cp -fv build/output/jars/odc.jar build/output/jars/odc-slim.jar
           zip -d build/output/jars/odc-slim.jar "BOOT-INF/classes/static/*"
       - name: Upload jar
@@ -305,14 +305,14 @@ jobs:
           path: jar-dist
       - name: Change directory
         run: |
-          mkdir -p client/libraries/java
-          cp jar-dist/jar/odc-slim.jar client/libraries/java/odc.jar
-          mkdir -p client/libraries/java/plugins
-          cp -R jar-dist/plugins/. client/libraries/java/plugins
-          mkdir -p client/libraries/java/starters
-          cp -R jar-dist/starters/. client/libraries/java/starters
-          mkdir -p client/libraries/java/modules
-          cp -R jar-dist/modules/. client/libraries/java/modules
+          mkdir -p apps/web-client/libraries/java
+          cp jar-dist/jar/odc-slim.jar apps/web-client/libraries/java/odc.jar
+          mkdir -p apps/web-client/libraries/java/plugins
+          cp -R jar-dist/plugins/. apps/web-client/libraries/java/plugins
+          mkdir -p apps/web-client/libraries/java/starters
+          cp -R jar-dist/starters/. apps/web-client/libraries/java/starters
+          mkdir -p apps/web-client/libraries/java/modules
+          cp -R jar-dist/modules/. apps/web-client/libraries/java/modules
       - name: Setup node 16
         uses: actions/setup-node@v4
         with:
@@ -347,7 +347,7 @@ jobs:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.PROD_WIN_CSC_KEY_PASSWORD }}
         run: |
           # Turn our base64-encoded certificate back to a regular .p12 file
-          cd client
+          cd apps/web-client
           # echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
           # We need to create a new keychain, otherwise using the certificate will prompt
           # with a UI dialog asking for the certificate password, which we can't
@@ -372,7 +372,7 @@ jobs:
         with:
           name: odc-client-pkg-${{ matrix.target }}
           path: |
-            client/release/*.dmg
-            client/release/*.deb
-            client/release/*.exe
-            client/release/*.AppImage
+            apps/web-client/release/*.dmg
+            apps/web-client/release/*.deb
+            apps/web-client/release/*.exe
+            apps/web-client/release/*.AppImage
