@@ -1,14 +1,6 @@
-#! /bin/bash
-# For stop odc-server process
+#!/usr/bin/env bash
+# Legacy compatibility wrapper. Canonical path: tools/scripts/kill-odc.sh
 
-
-echo "check odc-server by ps:"
-ps aux | grep odc-server | grep -v grep
-
-if [[ "$1" == "--force" ]]; then
-    echo "force mode, will use kill -9"
-    ps aux | grep odc-server | grep -v grep | awk '{print $2}' | xargs --no-run-if-empty kill -9
-else
-    ps aux | grep odc-server | grep -v grep | awk '{print $2}' | xargs --no-run-if-empty kill
-fi
-
+legacy_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+repo_root=$(cd "${legacy_dir}/.." && pwd)
+exec "${repo_root}/tools/scripts/kill-odc.sh" "$@"

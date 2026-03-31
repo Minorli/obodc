@@ -7,21 +7,22 @@
     <groupId>com.oceanbase</groupId>
     <artifactId>odc-parent</artifactId>
     <packaging>pom</packaging>
-    <name>OceanBase Developer Center</name>
-    <url>https://github.com/oceanbase/odc</url>
+    <name>obodc</name>
+    <url>https://github.com/Minorli/obodc</url>
     <version>0.1.0-SNAPSHOT</version>
+    <description>Fork-owned mainline for a robust OceanBase development workspace.</description>
     <modules>
-        <module>server/3rd-party/Libinjection</module>
-        <module>server/odc-test</module>
-        <module>server/odc-common</module>
-        <module>server/odc-core</module>
-        <module>server/plugins</module>
-        <module>server/odc-service</module>
-        <module>server/odc-server</module>
-        <module>server/starters</module>
-        <module>server/modules</module>
-        <module>server/integration-test</module>
-        <module>server/odc-migrate</module>
+        <module>third_party/source/Libinjection</module>
+        <module>packages/backend/test-support</module>
+        <module>packages/backend/common</module>
+        <module>packages/backend/core</module>
+        <module>extensions/plugins</module>
+        <module>packages/backend/service</module>
+        <module>apps/server</module>
+        <module>extensions/starters</module>
+        <module>extensions/modules</module>
+        <module>tests/integration</module>
+        <module>packages/backend/migrate</module>
     </modules>
 
     <properties>
@@ -32,8 +33,8 @@
 
         <!-- project constant configuration -->
         <root-project.basedir>${project.basedir}</root-project.basedir>
-        <format.config.file>builds/code-style/eclipse-java-oceanbase-style.xml</format.config.file>
-        <pmd.ruleset.file>builds/odc-pmd-rules.xml</pmd.ruleset.file>
+        <format.config.file>build/config/code-style/eclipse-java-oceanbase-style.xml</format.config.file>
+        <pmd.ruleset.file>build/config/odc-pmd-rules.xml</pmd.ruleset.file>
         <odc-server.rpm.name>odc-server</odc-server.rpm.name>
 
         <!-- oceanbase 2nd-party dependencies  -->
@@ -1443,7 +1444,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete dir="${project.basedir}/distribution/plugins"/>
+                                <delete dir="${project.basedir}/build/output/extensions/plugins"/>
                             </target>
                         </configuration>
                     </execution>
@@ -1455,7 +1456,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete dir="${project.basedir}/distribution/starters"/>
+                                <delete dir="${project.basedir}/build/output/extensions/starters"/>
                             </target>
                         </configuration>
                     </execution>
@@ -1467,7 +1468,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete dir="${project.basedir}/distribution/modules"/>
+                                <delete dir="${project.basedir}/build/output/extensions/modules"/>
                             </target>
                         </configuration>
                     </execution>
@@ -1499,7 +1500,7 @@ limitations under the License.
                         <include>src/test/java/**/*.java</include>
                     </includes>
                     <excludes>
-                        <exclude>libs/**</exclude>
+                        <exclude>packages/libs/**</exclude>
                     </excludes>
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>

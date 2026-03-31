@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
-# build sqlconsole (ODC frontend module)
+# Legacy compatibility wrapper. Canonical path: tools/scripts/build_sqlconsole.sh
 
-if ! source $(dirname "$0")/functions.sh; then
-    echo "source functions.sh failed"
-    exit 1
-fi
-
-build_sqlconsole
-exit $?
+legacy_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+repo_root=$(cd "${legacy_dir}/.." && pwd)
+exec "${repo_root}/tools/scripts/build_sqlconsole.sh" "$@"

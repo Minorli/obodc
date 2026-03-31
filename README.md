@@ -1,170 +1,120 @@
-![image.png](docs/en-US/images/odc-head.png)
+![obodc](docs/en-US/images/odc-head.png)
 
 English | [中文](./README-zh-CN.md)
 
-# OceanBase Developer Center (ODC)
+# obodc
 
-OceanBase Developer Center, or ODC for short, is an open-source, all-encompassing tool for collaborative database development and data management across various scenarios. By streamlining collaborative efforts, ODC addresses the challenges of risk management during database changes, efficient data management, and data security concerns.
-![image](https://github.com/oceanbase/odc/assets/15030999/e8f1afaf-26da-4de2-b634-e2061ec565d5)
+`obodc` is the new mainline of this fork, maintained at [Minorli/obodc](https://github.com/Minorli/obodc).
+It starts from the public upstream code line and is being rebuilt into a faster, more robust database development
+workspace for large-scale OceanBase environments.
 
-## 🤔 What ODC Offers and Why Choose ODC?
+## Fork Status
 
-### Effortless SQL Development, Anytime, Anywhere
+- Current fork version: `0.1.0-SNAPSHOT`
+- Default branch: `main`
+- Upstream baseline: public upstream `v4.3.4_bp2`
+- Current focus:
+  - hardening metadata browsing for very large datasource estates
+  - cleaning inherited branding and packaging surfaces
+  - preparing a new UI/UE iteration on top of the fork
 
-- Utilizing modern web architecture, ODC provides unparalleled accessibility to your databases, allowing you to perform SQL development tasks on the go, right from your web browser.
-- ODC boasts a comprehensive and user-friendly SQL development environment that encompasses all the features you'd expect from desktop development tools, and even offers support for PL debugging.
-  ![image](https://github.com/oceanbase/odc/assets/15030999/a8709d8f-3d57-4cb6-91c7-2cf54f04358b)
+## What obodc Is Optimizing For
 
-### Guard Every Change in Your SQL Development Journey
+- Large OceanBase fleets with hundreds of datasources and massive schema counts
+- Faster startup and lower MetaDB pressure
+- Safer metadata browsing that does not explode browser payload size
+- A cleaner product surface for future UI and feature work
 
-- Throughout the entire SQL development process, ODC is your steadfast companion, offering risk control at every turn. From visual object management to SQL queries, data editing, and import/export tasks, ODC comes equipped with built-in risk management tools.
-- ODC introduces project-based collaboration and change approval workflows, complemented by SQL validation rules, SQL window guidelines, and risk level identification.
-  ![image](https://github.com/oceanbase/odc/assets/15030999/ac55b51b-28e2-42e6-977a-7eeb7c3f11fa)
+## Repository Layout
 
-### Automated Data Lifecycle Management
-
-- ODC facilitates data retention policies, enabling you to effortlessly purge or archive data based on specified time frames, and build a hot-cold data separation system tailored to your needs in just 5 minutes.
-- Beyond time-based data handling, ODC supports batch processing based on partitioning, allowing you to efficiently manage large datasets.
-- With ODC's SQL scheduled tasks, completing computational tasks becomes a breeze, rendering traditional CRONTAB systems obsolete.
-  ![image](https://github.com/oceanbase/odc/assets/15030999/d9818c44-b7dc-45ad-a1ce-0a5ce9a20026)
-
-### Sensitive Data Protection in Every Scenario
-
-- ODC's data desensitization capabilities extend to both static and dynamic scenarios, ensuring that sensitive information remains safeguarded during schema changes, SQL queries, result set exports, and data extractions.
-- Security administrators can configure sensitive data rules and desensitization algorithms, ensuring that both DBAs and developers are unable to access sensitive data.
-  ![image](https://github.com/oceanbase/odc/assets/15030999/627f9c6d-6e1c-4c39-8a90-197d4bf842cf)
-
-### Seamless Integration Without Additional Code Development
-
-- Integrate ODC seamlessly into your current database development workflow without the need for disruptive changes.
-- From Single Sign-On (SSO) to approval integration, SQL review integration, bastion host integration, and audit integration, ODC offers a comprehensive suite of features that cater to enterprise control needs.
-  ![image](https://github.com/oceanbase/odc/assets/15030999/a741b2b8-c0a8-4026-abcf-6bd924ad8e75)
-
-## 🚀 Installation and Deployment
-
-ODC comes in two distinct forms: the dynamic Web version and the efficient Desktop version. Let's take a closer look at these offerings:
-
-- **Desktop Version**: Effortless Individual Development
-
-  The Desktop version is designed for personal development scenarios, offering an efficient and user-friendly SQL development tool. Supported operating systems include Windows and MacOS.
-
-- **Web Version**: Unleash Collaborative Power
-
-  The Web version caters to multi-person collaborative development scenarios, encompassing collaborative development, risk control, data security, and more. It serves as an integrated platform for database development, management, and control. The Web version provides various installation mediums, such as rpm and Docker images, supporting x86 and ARM architectures. It also encapsulates all the features of SQL development in the Desktop version.
-
-### Deploying the Web Version
-
-Please note that the deployment steps outlined in this section are meant for experiencing the functionality. For production environment deployment, please refer to the [Deployment Guide](https://github.com/oceanbase/odc-doc/blob/V4.2.0/en-US/1100.deployment-guide/100.deployment-overview.md).
-
-#### Before You Start
-
-The ODC Web version is packaged as a Docker image and relies on an OceanBase MySQL tenant as MetaDB. If you have not had a MetaDB, please follow **(Optional) Step 1: Create a MetaDB** below for instructions.
-
-Before you start, ensure that your environment meets the following requirements:
-
-- Docker is installed and the service is up and running. It is recommended to use the latest version of Docker.
-- The deployment machine for ODC has at least 2 available CPU cores and 4 GB of RAM.
-- The MetaDB requires a minimum specification of 1 vCPU and 4 GB of RAM.
-
-#### (Optional) Step 1: Create a MetaDB
-
-Use the sample script below to create a MetaDB if you do not already have one. To create a MetaDB, it would require an OceanBase cluster and a test tenant, which the script would also complete for you. The creation process may take about 2 minutes.
-
-Please note that the deployment machine for the OceanBase cluster should have at least 4 vCPUs and 8 GB of RAM.
-
-This script is for demo purposes only. If you have already had a MetaDB, please skip this step.
-
-```shell
-# Start an OceanBase cluster, which would automatically create a test tenant.
-docker run -p 2881:2881 --name oceanbase-ce -d oceanbase/oceanbase-ce
-
-# Connect to the test tenant within the cluster.
-docker exec -it oceanbase-ce ob-mysql root
-
-# Create a database user 'odc' and schema 'odc_metadb' within the tenant. Replace <password> with the actual password of your choice.
-CREATE USER odc IDENTIFIED BY '<password>';
-CREATE DATABASE odc_metadb;
-GRANT ALL ON odc_metadb.* TO odc;
+```text
+apps/           Canonical home for runnable products and entry modules
+packages/       Canonical home for shared backend modules and local libraries
+extensions/     Canonical home for plugins, starters, and modules
+tests/          Canonical home for integration and repository-level test assets
+tools/          Canonical home for developer and packaging scripts
+build/          Canonical home for build config and packaging assets
+third_party/    Canonical home for vendored source and local binaries
+client/         Frontend submodule location; aliased by apps/web-client
+distribution/   Compatibility alias for build/packaging and build/output
+script/         Compatibility alias for tools/scripts
+server/         Compatibility aliases for moved backend modules
+openspec/       Fork-owned specifications and change proposals
 ```
 
-#### Step 2: Launch the ODC Server
+## Quick Start
 
-Use the script below to launch the ODC Docker container.
+### Clone
 
-```shell
-# Launch ODC Server. The following example limits the container to 2 CPU cores and 4 GB of memory.
-
-# Replace <your_metadb_password> with the actual password of your MetaDB. If you have followed Step 1 above to create the MetaDB, then replace <your_metadb_password> with the password you set in Step 1.
-
-# Set the initial password for your admin account of ODC using the parameter <your_admin_password>. This password would be the one you use to log into the ODC Web. The password must satisfy the following requirements:
-# - At least 2 digits
-# - At least 2 lowercase letters
-# - At least 2 uppercase letters
-# - At least 2 special characters, allowed special characters includes ._+@#$%
-# - No spaces or other special characters
-# - 8~32 characters in length
-
-# The process to launch ODC may take about 2 minutes.
-
- docker run -d -it --name odc --network host \
- --cpu-period 100000 --cpu-quota 200000 --memory=4G \
- -e "DATABASE_HOST=127.0.0.1" -e "DATABASE_PORT=2881" -e "DATABASE_NAME=odc_metadb" \
- -e "DATABASE_USERNAME=odc@test" -e 'DATABASE_PASSWORD=<your_metadb_password>' \
- -e 'ODC_ADMIN_INITIAL_PASSWORD=<your_admin_password>' \
- -e "ODC_SERVER_PORT=8989" \
- oceanbase/odc:latest
+```bash
+git clone git@github.com:Minorli/obodc.git
+cd obodc
 ```
 
-#### What to do next
+### Build local dependencies
 
-After deploying ODC Web, you can follow our [Quick Start guide](https://github.com/oceanbase/odc-doc/blob/V4.2.0/en-US/300.quickstart/200.web-odc-quickstart/3.quickstart-using-web-odc.md) to start your journey with ODC.
+```bash
+tools/scripts/build_libs.sh
+```
 
-### Installing the Desktop Version
+### Build backend
 
-The Desktop version harnesses Electron technology to transform the web application into a desktop application, offering compatibility with multiple desktop operating systems. Installing the desktop application is straightforward: simply download the version-specific installer and double-click to initiate the installation process.
+```bash
+./mvnw clean package -DskipTests
+```
 
-ODC Desktop version employs the h2database embedded database as MetaDB, eliminating the need for MetaDB database configuration.
+### Run locally
 
-Here are the download links for ODC Desktop version installers:
+Set the MetaDB environment variables first, then start the server:
 
-- Windows 64-bit version: [odc-win64-with-jre.exe](https://obodc-front.oss-cn-beijing.aliyuncs.com/ODC%204.2.2/OceanBase%20Developer%20Center%20Setup%204.2.2%20win64jre.exe)
-- MacOS version: [odc-macos-with-jre.dmg](https://obodc-front.oss-cn-beijing.aliyuncs.com/ODC%204.2.2/OceanBase%20Developer%20Center-4.2.2jre.dmg)
-- Fedora/Ubuntu version: [odc-ubuntu.deb](https://obodc-front.oss-cn-beijing.aliyuncs.com/ODC%204.2.2/OceanBase%20Developer%20Center%20Setup%204.2.2%20amd64.deb)
+```bash
+export DATABASE_HOST=127.0.0.1
+export DATABASE_PORT=2881
+export DATABASE_NAME=odc_metadb
+export DATABASE_USERNAME=odc@test
+export DATABASE_PASSWORD='your_password'
+export ODC_SERVER_PORT=8989
 
-#### What to do next
+tools/scripts/nohup-start-odc.sh
+```
 
-After installing the Desktop version, you can follow our [Quick Start guide](https://github.com/oceanbase/odc-doc/blob/V4.2.0/en-US/300.quickstart/100.client-odc-quickstart/3.quickstart-using-client-odc.md) to start your journey with ODC.
+## Packaging
 
-## 🤝 Join the Contributing Community
+`0.1.0-SNAPSHOT` is a fork bootstrap line. Official fork-owned container images and release artifacts are not published yet.
+For now, build packages from source in this repository.
 
-ODC envisions an open community, collaboratively crafting a database development and control management tool. We welcome your contributions in any form:
+- Packaging overview: [build/packaging/README.md](build/packaging/README.md)
+- Backend development guide: [docs/en-US/DEVELOPER_GUIDE.md](docs/en-US/DEVELOPER_GUIDE.md)
+- Contribution guide: [docs/en-US/CONTRIBUTION.md](docs/en-US/CONTRIBUTION.md)
+- Upstream tracking policy: [docs/UPSTREAM_TRACKING.md](docs/UPSTREAM_TRACKING.md)
 
-- Report bugs through [Issues](https://github.com/oceanbase/odc/issues).
-- Participate in or initiate discussions via [Discussion](https://github.com/oceanbase/odc/discussions).
-- Contribute bug fixes or new features through [Pull requests](https://github.com/oceanbase/odc/pulls).
-- Share ODC to your friends and colleagues, and help expand the ODC community's influence.
+## Roadmap
 
-For detailed guidelines on contributing, please refer to the [Contribution Guide](docs/en-US/CONTRIBUTION.md). For comprehensive guidance on different types of code changes via pull requests, consult the [Pull requests](https://github.com/oceanbase/odc/pulls).
+The first fork milestones are:
 
-## 🛤️ Roadmap Ahead
+1. Stabilize large-scale metadata browsing and sync behavior.
+2. Rework visible branding, UI, and interaction patterns.
+3. Build a stronger SQL and operational workflow for OceanBase-heavy teams.
+4. Continue selectively merging valuable upstream fixes while diverging on product direction.
 
-Here's a glimpse into ODC's 2024 roadmap.
+## Contributing
 
-| **Focus Area**                     | **Q1**                                                                                                                                                                                                                                                                     | **Q2**                                                                                                                                                                                                                                                                                    | **Q3**                                                                                                                                                                                                                                                                 | **Q4**                                                                                                                                                                                                            |
-|------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **HTAP Collaborative Development** | <ul><li> Support Doris data source</li><li> Support Oracle data source</li><li> Support homogeneous database schema comparison/synchronization</li><li> Built-in common code snippets</li></ul>                                                                            | <ul><li> Support natural language conversion to SQL</li><li> Support real-time query and analysis</li><li> Support result set conversion to chart</li><li> Support global database object retrieval and positioning</li><li> Provide dbt-oceanbase plug-in</li></ul>                      | <ul><li> Support Git repository integration</li><li> Support dbt development integration</li><li> Support natural language conversion to chart</li><li> Support sharing scripts and code snippets within projects</li></ul>                                            | <ul><li> Support AI task orchestration</li><li> Support DAG task orchestration</li><li> Support lightweight report management</li><li> Support heterogeneous database schema comparison/synchronization</li></ul> |
-| **Change and Risk Control**        | <ul><li> Support database-level access control</li><li> Support sending alerts on task exceptions</li><li> Support automatic identification of offline DDL changes</li></ul>                                                                                               | <ul><li> Support logical database DDL changes</li><li> Support online schema changes</li><li> Support multi-database (pipeline) changes</li><li> Support assigning database administrator</li><li> Support table-level access control</li><li> Add global project administrator</li></ul> | <ul><li> Support logical database DML/DQL</li><li> Support configuring SQL check based on templates</li><li> Support sensitive column access application</li><li> Provide change rollback capability based on row-level recycle bin</li></ul>                          | <ul><li> Support automatic identification of sensitive data</li><li> Support state-based schema changes</li><li> Include command line window actions in operational auditing</li></ul>                            |
-| **Data Lifecycle Management**      | <ul><li> Data archiving/cleanup supports SQL preview</li><li> Data archiving/cleanup supports unique index tables</li><li> Data archiving supports source and target tables to be in the same database</li><li> Partitioning plan supports OB Oracle data source</li></ul> | <ul><li> Data archiving source query performance optimization</li><li> Support for archiving from OB to Files/OSS/S3</li><li> Homogeneous data archiving supports DDL incremental change synchronization</li></ul>                                                                        | <ul><li> Support for archiving from OB to COS/OBS</li><li> Support heterogeneous database archiving table structure synchronization</li><li> Support for archiving associated (foreign key) table scenarios</li><li> Risk prompts for data archiving/cleanup</li></ul> | <ul><li> Data archiving/cleanup supports logical database</li><li> Data archiving/cleanup supports Oracle data source</li></ul>                                                                                   |
-| **Ease of Use**                    | <ul><li> Optimize SQL development page interaction</li><li> Optimize database search capability</li><li> Desktop version supports custom JVM parameters</li><li> Support custom configuration items (including shortcuts, etc.)</li></ul>                                  | <ul><li> UI theme renewal</li><li> New project control concept guidance</li><li> Optimize ticket management page interaction</li><li> Enhance code auto-completion capability</li></ul>                                                                                                   | <ul><li> Optimize PL development experience</li><li> Optimize wide table scenario page interaction</li><li> Desktop version startup speed optimized to within 20s</li></ul>                                                                                            | <ul><li> Provide SQL formatting capability based on templates</li><li> Optimize operation record page interaction</li></ul>                                                                                       |
+Issues, pull requests, and discussions should go to the fork by default:
+
+- Issues: [Minorli/obodc/issues](https://github.com/Minorli/obodc/issues)
+- Discussions: [Minorli/obodc/discussions](https://github.com/Minorli/obodc/discussions)
+- Pull requests: [Minorli/obodc/pulls](https://github.com/Minorli/obodc/pulls)
+
+Read the contributor guide before sending changes:
+
+- [docs/en-US/CONTRIBUTION.md](docs/en-US/CONTRIBUTION.md)
+- [docs/en-US/DEVELOPER_GUIDE.md](docs/en-US/DEVELOPER_GUIDE.md)
+
+## Inherited History
+
+This fork preserves the upstream release history for reference. New fork work starts at `0.1.0-SNAPSHOT`.
+Older changelog entries are inherited from upstream ODC and are kept for historical context only.
 
 ## License
 
-ODC is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
-
-## Help and Support
-
-We welcome you to raise any questions or provide feedback through GitHub Issues. If you have trouble accessing GitHub, you can also join our DingTalk Group to seek assistance there.
-
-* [GitHub Issues](https://github.com/oceanbase/odc/issues)
-* [Discord Server](https://discord.gg/drPUb2kq)
-* [ODC DingTalk Group](https://qr.dingtalk.com/action/joingroup?code=v1,k1,OacNAwktCbVGqRk2jQ0TDga6j6AHtXtvU7ZrD6Orah0=&_dt_no_comment=1&origin=11)
+This repository remains licensed under [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).

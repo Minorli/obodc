@@ -77,7 +77,7 @@ jobs:
           echo "odc_rpm_release_number=${odc_rpm_release_number}"
           branch_match_regex="^(((dev/)?[0-9]\\.[0-9]\\.([0-9]{1,2}|x))|(release\\S*))$"
           tag_prefix=`[[ "${{ env.ODC_CURRENT_BRANCH }}" =~ ${branch_match_regex} ]] && echo "test" || echo "dev"`
-          odc_docker_image_tag="${tag_prefix}-$(cat distribution/odc-server-VER.txt)-${odc_rpm_release_number}"
+          odc_docker_image_tag="${tag_prefix}-$(cat build/packaging/server-version.txt)-${odc_rpm_release_number}"
           if [[ -n "${{ inputs.image_tag }}" ]]; then odc_docker_image_tag="${{ inputs.image_tag }}"; fi
           echo "odc_docker_image_tag=${odc_docker_image_tag}" >> $GITHUB_OUTPUT
           echo "odc_docker_image_tag=${odc_docker_image_tag}"
@@ -140,7 +140,7 @@ jobs:
         run: |
           echo "Current directory: "`pwd`
           echo "Start build front static resources"
-          pushd client
+          pushd apps/web-client
           echo "Run npm install pnpm -g"
           npm install pnpm@8 -g
           echo "Run pnpm install"
@@ -150,13 +150,13 @@ jobs:
           popd
           echo "Build front static resources success"
           echo "Start copy resources files"
-          static_resources_path="server/odc-server/src/main/resources/static"
+          static_resources_path="apps/server/src/main/resources/static"
           if [ ! -d "${static_resources_path}" ]; then
             echo "mkdir -p ${static_resources_path}"
             mkdir -p "${static_resources_path}"
           fi
           rm --force --recursive --verbose ${static_resources_path}/*
-          cp --force --recursive --verbose client/dist/renderer/* ${static_resources_path}
+          cp --force --recursive --verbose apps/web-client/dist/renderer/* ${static_resources_path}
           echo "Copy resources files success"
       - name: Set release version
         id: set_release_version
@@ -171,7 +171,7 @@ jobs:
         if: ${{ github.event.inputs.install_ob_sql_parser == 'true'}}
         run: |
           echo "Start install ob-sql-parser"
-          pushd libs/ob-sql-parser
+          pushd packages/libs/ob-sql-parser
           echo "Current dir is "`pwd`
           mvn clean install -Dmaven.test.skip=true
           echo "Install ob-sql-parser success"
@@ -180,7 +180,7 @@ jobs:
         if: ${{ github.event.inputs.install_db_browser == 'true'}}
         run: |
           echo "Start install db-browser"
-          pushd libs/db-browser
+          pushd packages/libs/db-browser
           echo "Current dir is "`pwd`
           mvn clean install -Dmaven.test.skip=true
           echo "Install db-browser success"
@@ -188,7 +188,7 @@ jobs:
       - name: Install pty4j
         run: |
           echo "Start install pty4j"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
           mvn install:install-file -Dfile=./pty4j-0.11.4.jar -DgroupId=org.jetbrains.pty4j -DartifactId=pty4j -Dversion=0.11.4 -Dpackaging=jar
           echo "Install pty4j success"
@@ -196,7 +196,7 @@ jobs:
       - name: Install purejavacomm
         run: |
           echo "Start install purejavacomm"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
           mvn install:install-file -Dfile=./purejavacomm-0.0.11.1.jar -DgroupId=org.jetbrains.pty4j -DartifactId=purejavacomm -Dversion=0.0.11.1 -Dpackaging=jar
           echo "Install purejavacomm success"
@@ -205,58 +205,58 @@ jobs:
         run: |
           echo "Start build jar packages"
           echo "Start prepare oceanbase-client"
-          pushd import
+          pushd third_party/binaries
           echo "Current dir is "`pwd`
-          cp ../build-resource/obclient/2.2.4/linux_x86/obclient.tar.gz obclient.tar.gz
+          cp ../build/resources/obclient/2.2.4/linux_x86/obclient.tar.gz obclient.tar.gz
           popd
           echo "Prepare oceanbase-client success"
           echo "Start build rpm package"
           mvn help:system
           mvn clean install -Dmaven.test.skip=true
           echo "Build jar packages success"
-          cp --verbose server/odc-server/target/*-executable.jar distribution/jar/odc.jar
-          cp -fv distribution/jar/odc.jar distribution/jar/odc-slim.jar
-          zip -d distribution/jar/odc-slim.jar "BOOT-INF/classes/static/*"
+          cp --verbose apps/server/target/*-executable.jar build/output/jars/odc.jar
+          cp -fv build/output/jars/odc.jar build/output/jars/odc-slim.jar
+          zip -d build/output/jars/odc-slim.jar "BOOT-INF/classes/static/*"
       - name: Upload jar
         if: ${{ github.event.inputs.build_jar == 'true' || github.event.inputs.build_client == 'true'}}
         uses: actions/upload-artifact@v4
         with:
           name: odc-artifact-jar
           path: |
-            distribution/plugins/*.jar
-            distribution/starters/*.jar
-            distribution/modules/*.jar
-            distribution/jar/*.jar
+            build/output/extensions/plugins/*.jar
+            build/output/extensions/starters/*.jar
+            build/output/extensions/modules/*.jar
+            build/output/jars/*.jar
       - name: Build rpm (x86_64)
         if: ${{ github.event.inputs.build_rpm == 'true' || github.event.inputs.build_docker == 'true' }}
         run: |
           echo "Start build rpm package"
-          mvn --file server/odc-server/pom.xml rpm:rpm -Drpm.prefix=/opt
+          mvn --file apps/server/pom.xml rpm:rpm -Drpm.prefix=/opt
           echo "Build rpm package success"
-          rm --force --recursive --verbose distribution/docker/resources/odc-*.rpm
-          mkdir -p distribution/docker/resources/
-          mv --verbose server/odc-server/target/rpm/odc-server/RPMS/*/odc-*.rpm distribution/docker/resources/
+          rm --force --recursive --verbose build/packaging/docker/resources/odc-*.rpm
+          mkdir -p build/packaging/docker/resources/
+          mv --verbose apps/server/target/rpm/odc-server/RPMS/*/odc-*.rpm build/packaging/docker/resources/
       - name: Upload rpm (x86_64)
         if: ${{ github.event.inputs.build_rpm == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: odc-server-${{ steps.set_release_version.outputs.new_version }}.x86_64.rpm
-          path: distribution/docker/resources/odc-*.rpm
+          path: build/packaging/docker/resources/odc-*.rpm
       - name: Build docker image (x86_64)
         if: ${{ github.event.inputs.build_docker == 'true' }}
         run: |
-          sed -e "s/DATE_CHANGE/$(date)/" -i distribution/docker/odc/Dockerfile
+          sed -e "s/DATE_CHANGE/$(date)/" -i build/packaging/docker/odc/Dockerfile
           echo "odc_docker_image_tag=${odc_docker_image_tag}"
-          pushd distribution/docker
-          docker build -t docker.io/oceanbase/odc:${odc_docker_image_tag} -f odc/Dockerfile .
-          docker save -o resources/odc-${odc_docker_image_tag}.tar.gz docker.io/oceanbase/odc:${odc_docker_image_tag}
+          pushd build/packaging/docker
+          docker build -t docker.io/minorli/obodc:${odc_docker_image_tag} -f odc/Dockerfile .
+          docker save -o resources/obodc-${odc_docker_image_tag}.tar.gz docker.io/minorli/obodc:${odc_docker_image_tag}
           popd
       - name: Upload docker image (x86_64)
         if: ${{ github.event.inputs.build_docker == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: odc-${{ env.odc_docker_image_tag }}.tar.gz
-          path: distribution/docker/resources/odc-*.tar.gz
+          name: obodc-${{ env.odc_docker_image_tag }}.tar.gz
+          path: build/packaging/docker/resources/obodc-*.tar.gz
 
   build-client:
     name: Build Client Artifact
@@ -280,14 +280,14 @@ jobs:
           path: jar-dist
       - name: Change directory
         run: |
-          mkdir -p client/libraries/java
-          cp jar-dist/jar/odc-slim.jar client/libraries/java/odc.jar
-          mkdir -p client/libraries/java/plugins
-          cp -R jar-dist/plugins/. client/libraries/java/plugins
-          mkdir -p client/libraries/java/starters
-          cp -R jar-dist/starters/. client/libraries/java/starters
-          mkdir -p client/libraries/java/modules
-          cp -R jar-dist/modules/. client/libraries/java/modules
+          mkdir -p apps/web-client/libraries/java
+          cp jar-dist/jar/odc-slim.jar apps/web-client/libraries/java/odc.jar
+          mkdir -p apps/web-client/libraries/java/plugins
+          cp -R jar-dist/plugins/. apps/web-client/libraries/java/plugins
+          mkdir -p apps/web-client/libraries/java/starters
+          cp -R jar-dist/starters/. apps/web-client/libraries/java/starters
+          mkdir -p apps/web-client/libraries/java/modules
+          cp -R jar-dist/modules/. apps/web-client/libraries/java/modules
       - name: Setup node 16
         uses: actions/setup-node@v4
         with:
@@ -322,7 +322,7 @@ jobs:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.PROD_WIN_CSC_KEY_PASSWORD }}
         run: |
           # Turn our base64-encoded certificate back to a regular .p12 file
-          cd client
+          cd apps/web-client
           # echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
           # We need to create a new keychain, otherwise using the certificate will prompt
           # with a UI dialog asking for the certificate password, which we can't
@@ -347,7 +347,7 @@ jobs:
         with:
           name: odc-client-pkg-${{ matrix.target }}
           path: |
-            client/release/*.dmg
-            client/release/*.deb
-            client/release/*.exe
-            client/release/*.AppImage
+            apps/web-client/release/*.dmg
+            apps/web-client/release/*.deb
+            apps/web-client/release/*.exe
+            apps/web-client/release/*.AppImage

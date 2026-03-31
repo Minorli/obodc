@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
-# build libs only, only required in dev stage, after there exists changes in libs
+# Legacy compatibility wrapper. Canonical path: tools/scripts/build_libs.sh
 
-if ! source $(dirname "$0")/functions.sh; then
-    echo "source functions.sh failed"
-    exit 1
-fi
-
-if ! maven_install_libs "${mvn_extra_args[@]}"; then
-    echo "maven install libs failed"
-    exit 2
-fi
-
-echo "maven install libs succeed"
-
-exit 0
+legacy_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+repo_root=$(cd "${legacy_dir}/.." && pwd)
+exec "${repo_root}/tools/scripts/build_libs.sh" "$@"
