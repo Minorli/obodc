@@ -1,0 +1,74 @@
+.tabs {
+  :global(.ant-tabs-nav) {
+    padding-left: 0px !important;
+  }
+}
+.tag {
+  margin-bottom: 12px;
+  .tagLabel {
+    color: var(--text-color-primary);
+  }
+}
+
+.innerEnv {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: 8px;
+  padding-right: 4px;
+}
+
+.modal {
+  :global {
+    .ant-form-item {
+      .ant-form-item-tooltip {
+        cursor: default !important;
+      }
+    }
+  }
+}
+
+.spin {
+  height: 100%;
+  :global {
+    .ant-spin-nested-loading {
+      height: 100%;
+    }
+    .ant-spin-container {
+      height: 100%;
+    }
+  }
+}
+
+.tagSelector {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  :global {
+    .ant-tag {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+.popover {
+  :global {
+    .ant-popover-inner-content {
+      min-width: 80px;
+    }
+    .ant-popover-inner {
+      padding: 0px;
+    }
+  }
+}
+
+.envNameTip {
+  color: var(--text-color-hint);
+  margin-top: 4px;
+}
+
+.linkBtnDisabled {
+  padding: 0px;
+  height: 12px;
+  line-height: 12px;
+}

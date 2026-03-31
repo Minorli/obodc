@@ -1,0 +1,386 @@
+/*
+ * Copyright 2023 OceanBase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { getDataSourceModeConfig } from '@/common/datasource';
+import { getSequence } from '@/common/network/sequence';
+import { IEditor } from '@/component/MonacoEditor';
+import ObjectInfoView from '@/component/ObjectInfoView';
+import { SQLCodePreviewer } from '@/component/SQLCodePreviewer';
+import Toolbar from '@/component/Toolbar';
+import { IConStatus } from '@/component/Toolbar/statefulIcon';
+import { ISequence } from '@/d.ts';
+import { SequencePage as SequencePageModel } from '@/store/helper/page/pages';
+import type { ModalStore } from '@/store/modal';
+import type { PageStore } from '@/store/page';
+import { SessionManagerStore } from '@/store/sessionManager';
+import SessionStore from '@/store/sessionManager/session';
+import type { SQLStore } from '@/store/sql';
+import { formatMessage } from '@/util/intl';
+import { downloadPLDDL } from '@/util/sqlExport';
+import {
+  AlignLeftOutlined,
+  CloudDownloadOutlined,
+  EditOutlined,
+  SyncOutlined,
+} from '@ant-design/icons';
+import { Layout, Spin, Tabs } from 'antd';
+import { inject, observer } from 'mobx-react';
+import { Component } from 'react';
+import SessionContext from '../SessionContextWrap/context';
+import WrapSessionPage from '../SessionContextWrap/SessionPageWrap';
+import styles from './index.less';
+
+const { Content } = Layout;
+const ToolbarButton = Toolbar.Button;
+
+// 属性 Tab key 枚举
+export enum PropsTab {
+  INFO = 'INFO',
+  PARAMS = 'PARAMS',
+  DDL = 'DDL',
+}
+
+interface IProps {
+  sqlStore: SQLStore;
+  pageStore: PageStore;
+  sessionManagerStore: SessionManagerStore;
+  modalStore?: ModalStore;
+  pageKey: string;
+  params: SequencePageModel['pageParams'];
+
+  onUnsavedChange: (pageKey: string) => void;
+}
+
+interface IState {
+  propsTab: PropsTab;
+  formated: boolean;
+  sequence: ISequence;
+}
+
+@inject('sqlStore', 'pageStore', 'sessionManagerStore', 'modalStore')
+@observer
+class SequencePage extends Component<IProps & { session: SessionStore }, IState> {
+  public editor: IEditor;
+
+  public readonly state: IState = {
+    propsTab: this.props.params.propsTab || PropsTab.INFO,
+    formated: false,
+    sequence: null,
+  };
+
+  public UNSAFE_componentWillReceiveProps(nextProps: IProps) {
+    if (
+      nextProps.params &&
+      this.props.params &&
+      this.props.params.propsTab &&
+      nextProps.params.propsTab !== this.state.propsTab
+    ) {
+      this.setState({
+        propsTab: nextProps.params.propsTab,
+      });
+    }
+  }
+  private getSequence = () => {
+    return this.state.sequence;
+  };
+  public handlePropsTabChanged = (propsTab: PropsTab) => {
+    const { pageStore, pageKey } = this.props;
+    const sequence = this.getSequence();
+    this.setState({ propsTab });
+    // 更新 url
+    pageStore.updatePage(
+      pageKey,
+      {},
+      {
+        sequenceName: sequence.name,
+        propsTab,
+      },
+    );
+  };
+
+  public reloadSequence = async (sequenceName: string) => {
+    const { session } = this.props;
+    const sequence = await getSequence(sequenceName, session?.sessionId, session?.database?.dbName);
+    sequence &&
+      this.setState({
+        sequence,
+      });
+  };
+
+  public async componentDidMount() {
+    const {
+      params: { sequenceName },
+    } = this.props;
+
+    await this.reloadSequence(sequenceName);
+  }
+
+  private handleFormat = () => {
+    const { formated } = this.state;
+    const sequence = this.getSequence();
+    if (!formated) {
+      this.editor.doFormat();
+    } else {
+      this.editor.setValue(sequence?.ddl || '');
+    }
+    this.setState({
+      formated: !formated,
+    });
+  };
+
+  private showSequenceEditModal = () => {
+    const sequence = this.getSequence();
+    this.props.modalStore.changeCreateSequenceModalVisible(true, {
+      isEdit: true,
+      data: sequence,
+      databaseId: this.props.session?.odcDatabase?.id,
+      dbName: this.props.session?.odcDatabase?.name,
+    });
+  };
+
+  public render() {
+    const { params, session } = this.props;
+    const { propsTab, formated } = this.state;
+    const sequence = this.getSequence();
+
+    return sequence ? (
+      <>
+        <Content style={{ height: '100%' }}>
+          <Tabs
+            activeKey={propsTab}
+            tabPosition="left"
+            className={styles.propsTab}
+            onChange={this.handlePropsTabChanged as any}
+            items={[
+              {
+                key: PropsTab.INFO,
+                label: formatMessage({
+                  id: 'workspace.window.sequence.propstab.info',
+                  defaultMessage: '基本信息',
+                }),
+                children: (
+                  <>
+                    <Toolbar>
+                      <Toolbar.Button
+                        text={formatMessage({
+                          id: 'workspace.window.session.button.edit',
+                          defaultMessage: '编辑',
+                        })}
+                        icon={<EditOutlined />}
+                        onClick={this.showSequenceEditModal}
+                      />
+
+                      <ToolbarButton
+                        text={formatMessage({
+                          id: 'workspace.window.session.button.refresh',
+                          defaultMessage: '刷新',
+                        })}
+                        icon={<SyncOutlined />}
+                        onClick={this.reloadSequence.bind(this, params.sequenceName)}
+                      />
+                    </Toolbar>
+                    <ObjectInfoView
+                      data={[
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.SequenceName',
+                            defaultMessage: '序列名称',
+                          }),
+                          // 序列名称
+                          content: sequence.name,
+                        },
+
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.NextBufferValue',
+                            defaultMessage: '下一个缓冲值',
+                          }),
+                          // 下一个缓冲值
+                          content: sequence.nextCacheValue,
+                        },
+
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.Incremental',
+                            defaultMessage: '增量',
+                          }),
+                          // 增量
+                          content: sequence.increament,
+                        },
+
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.ValidValues',
+                            defaultMessage: '取值范围',
+                          }),
+                          // 取值范围
+                          content: `${sequence.minValue} ~ ${sequence.maxValue}`,
+                        },
+
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.CacheSettings',
+                            defaultMessage: '缓存设置',
+                          }),
+                          // 缓存设置
+                          content: sequence.cached
+                            ? formatMessage({
+                                id: 'odc.components.SequencePage.Cache',
+                                defaultMessage: '缓存',
+                              }) +
+                              // `缓存 `
+                              sequence.cacheSize
+                            : formatMessage({
+                                id: 'odc.components.SequencePage.NoCache',
+                                defaultMessage: '不缓存',
+                              }),
+                          // 不缓存
+                        },
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.Sort',
+                            defaultMessage: '是否排序',
+                          }),
+                          // 是否排序
+                          content: sequence.orderd
+                            ? formatMessage({
+                                id: 'odc.components.SequencePage.Is',
+                                defaultMessage: '是',
+                              }) // 是
+                            : formatMessage({
+                                id: 'odc.components.SequencePage.No',
+                                defaultMessage: '否',
+                              }), // 否
+                        },
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.LoopOrNot',
+                            defaultMessage: '是否循环',
+                          }),
+                          // 是否循环
+                          content: sequence.cycled
+                            ? formatMessage({
+                                id: 'odc.components.SequencePage.Is',
+                                defaultMessage: '是',
+                              }) // 是
+                            : formatMessage({
+                                id: 'odc.components.SequencePage.No',
+                                defaultMessage: '否',
+                              }), // 否
+                        },
+                        {
+                          label: formatMessage({
+                            id: 'odc.components.SequencePage.Owner',
+                            defaultMessage: '所有者',
+                          }),
+                          // 所有者
+                          content: sequence.user,
+                        },
+                      ]}
+                    />
+                  </>
+                ),
+              },
+              {
+                key: PropsTab.DDL,
+                label: 'DDL',
+                children: (
+                  <>
+                    <Toolbar>
+                      <ToolbarButton
+                        text={
+                          formatMessage({
+                            id: 'odc.components.SequencePage.Download',
+                            defaultMessage: '下载',
+                          }) //下载
+                        }
+                        icon={<CloudDownloadOutlined />}
+                        onClick={() => {
+                          downloadPLDDL(
+                            sequence?.name,
+                            'SEQUENCE',
+                            sequence?.ddl,
+                            this.props.session?.odcDatabase?.name,
+                          );
+                        }}
+                      />
+
+                      <ToolbarButton
+                        text={
+                          formated
+                            ? formatMessage({
+                                id: 'odc.components.SequencePage.Unformat',
+                                defaultMessage: '取消格式化',
+                              })
+                            : // 取消格式化
+                              formatMessage({
+                                id: 'odc.components.SequencePage.Formatting',
+                                defaultMessage: '格式化',
+                              })
+
+                          // 格式化
+                        }
+                        icon={<AlignLeftOutlined />}
+                        onClick={this.handleFormat}
+                        status={formated ? IConStatus.ACTIVE : IConStatus.INIT}
+                      />
+
+                      <ToolbarButton
+                        text={formatMessage({
+                          id: 'workspace.window.session.button.refresh',
+                          defaultMessage: '刷新',
+                        })}
+                        icon={<SyncOutlined />}
+                        onClick={this.reloadSequence.bind(this, params.sequenceName)}
+                      />
+                    </Toolbar>
+                    <div style={{ height: `calc(100% - 38px)`, position: 'relative' }}>
+                      <SQLCodePreviewer
+                        readOnly
+                        defaultValue={(sequence && sequence.ddl) || ''}
+                        language={getDataSourceModeConfig(session?.connection?.type)?.sql?.language}
+                        onEditorCreated={(editor: IEditor) => {
+                          this.editor = editor;
+                        }}
+                      />
+                    </div>
+                  </>
+                ),
+              },
+            ]}
+          />
+        </Content>
+      </>
+    ) : (
+      <Spin />
+    );
+  }
+}
+
+export default WrapSessionPage(
+  function (props: IProps) {
+    return (
+      <SessionContext.Consumer>
+        {({ session }) => {
+          return <SequencePage {...props} session={session} />;
+        }}
+      </SessionContext.Consumer>
+    );
+  },
+  true,
+  false,
+  true,
+);

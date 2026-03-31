@@ -1,0 +1,12 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: OceanBase
+    copyright-year: '2023'
+  paths:
+    - 'src/**/*.ts'
+    - 'src/**/*.js'
+    - 'src/**/*.tsx'
+    - 'src/**/*.css'
+    - 'scripts/**/*.js'
+  comment: on-failure

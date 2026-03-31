@@ -34,7 +34,6 @@ If you need frontend assets locally:
 
 ```bash
 tools/scripts/init_node_env.sh
-tools/scripts/update_submodule.sh
 tools/scripts/build_sqlconsole.sh
 ```
 

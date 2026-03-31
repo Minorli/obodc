@@ -1,4 +1,0 @@
-[submodule "client"]
-	path = client
-	url = https://github.com/oceanbase/odc-client.git
-	branch = dev-4.3.4

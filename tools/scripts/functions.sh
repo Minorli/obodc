@@ -176,36 +176,12 @@ function clean_nvs_temp_files() {
 }
 
 #############################################
-# update submodule
-# RETURN: 0 if succeed, non-zero if failed
+# repository no longer uses git submodules
+# RETURN: always 0 for compatibility
 #############################################
 function update_submodule() {
-    func_echo "start update submodule ,current directory: [$(pwd)]"
-
-    # git submodule command need to run from the top level of the working tree
-    pushd "${ODC_DIR}"
-    func_echo "goto ${ODC_DIR}"
-
-    # initial submodule local configuration file
-    git submodule init
-    # refresh submodule git url to project
-    git submodule sync
-    # refresh submodule from url
-    git submodule update --init --remote
-    local submodule_update_ret=$?
-
-    # show submodule status and summary
-    func_echo "submodule status: "
-    git submodule status
-
-    func_echo "submodule summary: "
-    git submodule summary
-
-    popd
-    func_echo "back to previous directory: [$(pwd)]"
-
-    func_echo "update submodule complete"
-    return ${submodule_update_ret}
+    func_echo "skip update_submodule, repository no longer uses git submodules"
+    return 0
 }
 
 function build_sqlconsole() {
@@ -261,11 +237,6 @@ function fetch_sqlconsole_from_cdn() {
     fi
     local backend_static_path="${ODC_DIR}/apps/server/src/main/resources/static/"
 
-    if ! git config -f "${ODC_DIR}/.gitmodules" --get submodule.client.branch; then
-        func_echo "check sqlconsole branch name failed"
-        return 1
-    fi
-
     rm -vfR ${backend_static_path}/*
 
     if [ ! -d "${backend_static_path}" ]; then
@@ -273,7 +244,7 @@ function fetch_sqlconsole_from_cdn() {
         mkdir -p "${backend_static_path}"
     fi
 
-    local sqlconsole_branch=$(git config -f "${ODC_DIR}/.gitmodules" --get submodule.client.branch)
+    local sqlconsole_branch="vendored-client"
     local sqlconsole_base_url="${ODC_CDN_BASE_URL}/${sqlconsole_branch}"
     local sqlconsole_index_html="${sqlconsole_base_url}/index.html"
 

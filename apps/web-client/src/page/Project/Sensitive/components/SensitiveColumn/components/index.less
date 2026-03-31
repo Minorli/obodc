@@ -1,0 +1,243 @@
+@import '../index.less';
+.formItem {
+  margin-bottom: 12px;
+
+  :global(.ant-form-item) {
+    margin-bottom: 0px;
+  }
+}
+
+.collapse {
+  :global {
+    .ant-collapse-item {
+      .ant-collapse-header {
+        padding: 4px 12px;
+        background-color: #f5f7fa;
+        border-color: #f5f7fa;
+      }
+    }
+  }
+
+  .descriptions {
+    :global {
+      .ant-descriptions-row > th,
+      .ant-descriptions-row > td {
+        padding-bottom: 0px;
+      }
+    }
+  }
+}
+
+.collapses {
+  :global {
+    .ant-collapse-content-box {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+.bigTable {
+  :global {
+    .ant-table-thead {
+      .ant-table-cell {
+        box-sizing: border-box;
+        height: 24px;
+        padding: 0 16px;
+        line-height: 24px;
+        background-color: var(--navigationv2-background-color);
+        &::before {
+          display: none;
+        }
+        &.ant-table-cell-fix-left {
+          &,
+          .ant-table-filter-trigger {
+            padding-right: 10px;
+          }
+        }
+        .ant-table-column-sorters {
+          padding: 0;
+        }
+      }
+    }
+    .ant-table-tbody {
+      .ant-table-cell {
+        padding: 10px 16px;
+        line-height: 20px;
+      }
+    }
+  }
+}
+.tooltipContent {
+  max-width: 220px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.scanResultPreview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.modal {
+  :global {
+    .ant-modal-body {
+      padding: 16px;
+    }
+  }
+}
+
+.drawer {
+  :global {
+    .ant-drawer-body {
+      padding: 16px;
+    }
+  }
+}
+
+//处理文字内容过长和自定义内容重叠的样式
+.lineEllipsis {
+  display: inline-block;
+  width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+//自定义内容
+.optionExpand::after {
+  color: rgb(230, 128, 13);
+  content: attr(data-name);
+}
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px !important;
+  height: 24px;
+  color: var(--icon-color-disable);
+  font-size: 14px;
+  line-height: 24px;
+}
+.manualForm {
+  &Content {
+    display: flex;
+    flex-direction: column;
+    .form {
+      .select {
+        width: 320px;
+      }
+      .currentProject {
+        color: var(--text-color-hint);
+      }
+    }
+    .exportCard {
+      margin-top: 24px;
+      .label {
+        margin-bottom: 4px;
+        color: var(--text-color-primary);
+      }
+      .doubleExportCardContainer {
+        display: flex;
+        width: 100%;
+      }
+      .content {
+        flex: 1 1 50%;
+        width: 50%;
+        height: calc(100vh - 265px);
+        overflow-y: auto;
+        border: 1px solid var(--odc-border-color);
+        border-right-width: 0;
+        .centerContainer {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+        }
+      }
+      .content + .content {
+        border-right-width: 1px;
+      }
+    }
+  }
+}
+.wrapCollapse {
+  padding: 0px 12px 0px 0px;
+  .panelHeader {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    .headerIcon {
+      display: flex;
+      color: var(--icon-color-disable) !important;
+      font-size: 14;
+      line-height: 1;
+    }
+  }
+  .panelContent {
+    display: flex;
+    justify-content: flex-end;
+    .checkedTable {
+      display: flex;
+      justify-content: space-between;
+      &Column {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        margin-right: 8px;
+        &Icon {
+          align-self: flex-start;
+          height: 28px;
+          color: var(--icon-color-disable) !important;
+          line-height: 28px;
+        }
+        &Tooltip {
+          width: 76px;
+          overflow: hidden;
+          line-height: 28px;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          text-overflow: hidden;
+          &:hover {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+  :global {
+    .ant-collapse-item {
+      margin-left: 4px;
+      .ant-collapse-header {
+        height: 22px;
+        padding: 0px;
+        line-height: 22px;
+      }
+      .ant-collapse-content {
+        .ant-collapse-content-box {
+          padding: 8px 0px 0px;
+        }
+      }
+      .ant-form-item {
+        margin-bottom: 8px;
+      }
+    }
+  }
+}
+
+.tree {
+  :global {
+    .ant-tree-node-content-wrapper {
+      display: flex;
+    }
+  }
+}
+.popover {
+  :global {
+    .ant-popover-inner {
+      border-radius: 5px;
+    }
+  }
+}

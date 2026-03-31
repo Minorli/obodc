@@ -1,0 +1,312 @@
+.riskLevelDrawer {
+  :global {
+    .ant-descriptions-row > th,
+    .ant-descriptions-row > td {
+      padding-bottom: 8px;
+    }
+
+    .ant-drawer-body {
+      padding: 16px;
+    }
+  }
+}
+
+.approvalContainer {
+  margin-bottom: 8px;
+
+  :global {
+    .ant-timeline .ant-timeline-item-head {
+      width: 8px;
+      height: 8px;
+      background: var(--timeline-item-head);
+      border-color: transparent;
+    }
+
+    .ant-timeline-item-last > .ant-timeline-item-content {
+      min-height: auto;
+    }
+
+    .ant-timeline-item-tail {
+      left: 3.5px;
+      height: calc(100% - 12px);
+      border-left: 1px solid var(--timeline-item-tail);
+    }
+
+    .ant-timeline-item {
+      padding-bottom: 28px;
+
+      &:last-of-type {
+        padding-bottom: 0px;
+      }
+    }
+  }
+}
+
+.approvalDescriptions {
+  padding: 20px;
+  background: var(--neutral-grey1-color);
+
+  :global {
+    .ant-descriptions-header {
+      margin-bottom: 0px;
+
+      .ant-descriptions-title {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+.nodeBold {
+  font-weight: 500;
+  font-style: Medium;
+}
+
+.nodeContent {
+  color: var(--text-color-secondary) !important;
+}
+
+.title {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.left {
+  height: calc(100% - 24px);
+  width: 10px;
+  margin-left: 10px;
+  border: 2px solid var(--default-border-color);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-right: none;
+  position: absolute;
+}
+
+.leftAnd {
+  border-color: var(--blue-color);
+}
+
+.leftOr {
+  border-color: var(--green-color);
+}
+
+.bo {
+  z-index: 10;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  background-color: white;
+  border: 1px solid white;
+  text-align: center;
+  margin: auto;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  user-select: none;
+}
+.gl {
+  margin-left: 11px;
+}
+.boAnd {
+  color: var(--blue-color);
+  background-color: #e6eeff;
+}
+.boAndHover {
+  color: white;
+  background-color: var(--blue-color);
+}
+
+.boOr {
+  color: var(--green-color);
+  background-color: #e2faee;
+}
+.boOrHover {
+  color: white;
+  background-color: var(--green-color);
+}
+
+.tag {
+  height: 20px;
+  color: var(--text-color-primary);
+  .tagLabel {
+    color: var(--text-color-hint);
+  }
+}
+
+// InnerRiskLevel
+.innerRiskLevel {
+  height: 100%;
+  padding: 12px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ruleContent {
+  .ruleDetail {
+    margin-bottom: 8px;
+    color: var(--text-color-hint);
+  }
+  :global {
+    .anticon {
+      color: var(--text-color-hint);
+    }
+  }
+}
+
+.conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+
+  :global {
+    .ant-space-item {
+      .ant-form-item {
+        margin-bottom: 0px;
+      }
+    }
+  }
+}
+
+.treeEmpty {
+  display: flex;
+  position: relative;
+  align-items: center;
+}
+
+.conditionGroupContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.tree {
+  display: flex;
+  position: relative;
+  margin-left: 11px;
+}
+
+.conditionItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btnGroup {
+  padding: 0px 0px 0px 11px;
+  :global {
+    .ant-space-item {
+      .ant-form-item {
+        margin-bottom: 0px;
+      }
+      .ant-btn.ant-btn-link {
+        padding: 0px;
+      }
+    }
+  }
+}
+
+// RootNodeContent
+.rootNodeContent {
+  min-height: 240px;
+  padding: 16px 8px;
+  background-color: var(--neutral-grey2-color);
+  width: 100%;
+
+  &Empty {
+    min-height: 240px;
+    padding: 16px 8px;
+    background-color: var(--neutral-grey2-color);
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.treeScopeContainer {
+  display: flex;
+
+  .treeScope {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &Border {
+      position: absolute;
+      width: 10px;
+      height: 100%;
+      top: 0px;
+      left: 12px;
+      border: 2px solid transparent;
+      border-color: #d9d9d9;
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+      border-right: none;
+
+      &And {
+        color: white;
+        border-color: var(--blue-color);
+      }
+
+      &Or {
+        color: white;
+        border-color: var(--green-color);
+      }
+    }
+
+    &Title {
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      text-align: center;
+      user-select: none;
+      border: none;
+      border-radius: 12px;
+      background-color: var(--neutral-grey2-color);
+      z-index: 2;
+
+      &And {
+        color: white;
+        background-color: var(--blue-color);
+      }
+
+      &Or {
+        color: white;
+        background-color: var(--green-color);
+      }
+    }
+
+    &Node {
+      margin-left: 11px;
+      padding: 6px 0px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+  .treeInputBorder {
+    width: 250px;
+    height: 28px;
+
+    padding: 0px 11px;
+    background-color: var(--forbiden-color);
+    color: var(--text-color-placeholder);
+
+    border: 1px solid var(--odc-border-color);
+    border-radius: 2px;
+
+    display: flex;
+    align-items: center;
+
+    user-select: none;
+    cursor: not-allowed;
+    word-break: break-all;
+    overflow-y: auto;
+  }
+}

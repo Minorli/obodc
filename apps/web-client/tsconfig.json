@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "outDir": "build/dist",
+    "module": "esnext",
+    "target": "es2016",
+    "lib": ["es6", "dom", "DOM.Iterable"],
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "strictNullChecks": false,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictPropertyInitialization": false,
+    "noImplicitReturns": false,
+    "ignoreDeprecations": "5.0",
+    "noUnusedLocals": false,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@@/*": ["src/.umi/*"],
+      "@@node_modules/*": ["node_modules/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": [
+    "node_modules",
+    "build",
+    "config",
+    "jest.config.js",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts",
+    "public"
+  ]
+}

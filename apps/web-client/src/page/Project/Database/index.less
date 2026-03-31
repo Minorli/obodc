@@ -1,0 +1,31 @@
+.disable {
+  cursor: not-allowed;
+  color: var(--mask-color);
+  &:hover {
+    cursor: not-allowed;
+    color: var(--mask-color);
+  }
+}
+
+.groupColumn {
+  .databaseName {
+    :global {
+      .ant-table-cell-content {
+        display: inline !important;
+      }
+    }
+    .groupColumnCell {
+      white-space: nowrap;
+      font-weight: 600;
+      .tip {
+        color: var(--text-color-hint);
+        margin-left: 6px;
+        font-weight: normal;
+      }
+    }
+  }
+}
+
+.mr6 {
+  margin-right: 6px;
+}
