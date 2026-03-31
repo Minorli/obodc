@@ -27,15 +27,15 @@ The project still relies on a small number of locally installed binary dependenc
 Install them first:
 
 ```bash
-script/build_libs.sh
+tools/scripts/build_libs.sh
 ```
 
 If you need frontend assets locally:
 
 ```bash
-script/init_node_env.sh
-script/update_submodule.sh
-script/build_sqlconsole.sh
+tools/scripts/init_node_env.sh
+tools/scripts/update_submodule.sh
+tools/scripts/build_sqlconsole.sh
 ```
 
 ## 4. Backend Build
@@ -66,7 +66,7 @@ export ODC_SERVER_PORT=8989
 Start the backend:
 
 ```bash
-script/nohup-start-odc.sh
+tools/scripts/nohup-start-odc.sh
 ```
 
 ## 6. Tests
@@ -86,7 +86,7 @@ Typical commands:
 
 ## 7. Formatting and IDE
 
-- The repository formatting rules live under `builds/code-style/`.
+- The repository formatting rules currently live under `builds/code-style/` and are planned to migrate under `build/`.
 - IntelliJ IDEA project settings under `.idea/codeStyle` should be used as the baseline.
 - Install Lombok support if your IDE needs it.
 

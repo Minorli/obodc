@@ -21,14 +21,17 @@ If you encounter unacceptable behavior, contact the repository maintainers throu
 ## Repository Structure
 
 ```text
-builds/         Build environment and formatting configuration
-client/         Frontend workspace
-distribution/   Packaging configuration for Docker, RPM, starters, modules, and plugins
-docs/           Contributor and developer documentation
-import/         External binary dependencies used during local builds
-libs/           Shared libraries such as db-browser and ob-sql-parser
-script/         Build, bootstrap, test, and run scripts
-server/         Backend services, plugins, starters, modules, and tests
+apps/           Canonical home for runnable products and entry modules
+packages/       Canonical home for shared backend modules and local libraries
+extensions/     Canonical home for plugins, starters, and modules
+tests/          Canonical home for integration and repository-level test assets
+tools/          Canonical home for developer and packaging scripts
+build/          Canonical home for build config and packaging assets
+third_party/    Canonical home for vendored source and local binaries
+client/         Legacy location during migration
+distribution/   Legacy packaging layout during migration
+script/         Legacy wrappers during migration
+server/         Legacy backend layout during migration
 openspec/       Fork-owned specs and change proposals
 ```
 

@@ -28,14 +28,17 @@
 ## 仓库结构
 
 ```text
-builds/         构建环境和代码风格配置
-client/         前端工作区
-distribution/   Docker、RPM、starter、module、plugin 的打包配置
-docs/           贡献和开发文档
-import/         本地构建时会安装的第三方二进制依赖
-libs/           db-browser、ob-sql-parser 等共享库
-script/         构建、启动、初始化脚本
-server/         Java 后端、插件、starter、module
+apps/           可运行产品和主入口模块的规范位置
+packages/       共享后端模块和本地库的规范位置
+extensions/     插件、starter、module 的规范位置
+tests/          集成测试和仓库级测试资产的规范位置
+tools/          开发与打包脚本的规范位置
+build/          构建配置与打包资产的规范位置
+third_party/    vendored source 和本地二进制依赖的规范位置
+client/         迁移期保留的旧前端位置
+distribution/   迁移期保留的旧打包位置
+script/         迁移期保留的旧脚本 wrapper
+server/         迁移期保留的旧后端布局
 openspec/       fork 自己维护的规格与变更提案
 ```
 
@@ -51,7 +54,7 @@ cd obodc
 ### 构建本地依赖
 
 ```bash
-script/build_libs.sh
+tools/scripts/build_libs.sh
 ```
 
 ### 构建后端
@@ -72,7 +75,7 @@ export DATABASE_USERNAME=odc@test
 export DATABASE_PASSWORD='your_password'
 export ODC_SERVER_PORT=8989
 
-script/nohup-start-odc.sh
+tools/scripts/nohup-start-odc.sh
 ```
 
 ## 打包与发布

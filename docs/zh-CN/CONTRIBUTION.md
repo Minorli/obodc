@@ -20,14 +20,17 @@
 ## 仓库结构
 
 ```text
-builds/         构建环境和格式化配置
-client/         前端工作区
-distribution/   Docker、RPM、starter、module、plugin 的打包配置
-docs/           贡献和开发文档
-import/         本地构建时会安装的外部二进制依赖
-libs/           db-browser、ob-sql-parser 等共享库
-script/         构建、初始化、测试、启动脚本
-server/         后端服务、插件、starter、module 与测试
+apps/           可运行产品和入口模块的规范位置
+packages/       共享后端模块和本地库的规范位置
+extensions/     插件、starter、module 的规范位置
+tests/          集成测试和仓库级测试资产的规范位置
+tools/          开发与打包脚本的规范位置
+build/          构建配置与打包资产的规范位置
+third_party/    vendored source 和本地二进制依赖的规范位置
+client/         迁移期保留的旧位置
+distribution/   迁移期保留的旧打包布局
+script/         迁移期保留的旧 wrapper
+server/         迁移期保留的旧后端布局
 openspec/       fork 自己维护的规格与变更提案
 ```
 

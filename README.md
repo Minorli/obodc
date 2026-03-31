@@ -28,14 +28,17 @@ workspace for large-scale OceanBase environments.
 ## Repository Layout
 
 ```text
-builds/         Build environment and style configuration
-client/         Frontend workspace
-distribution/   Docker, RPM, starter, module, and plugin packaging
-docs/           Contributor and developer documentation
-import/         Third-party binary dependencies installed locally for builds
-libs/           Shared libraries such as db-browser and ob-sql-parser
-script/         Build, bootstrap, and run scripts
-server/         Java backend, plugins, starters, and modules
+apps/           Canonical home for runnable products and entry modules
+packages/       Canonical home for shared backend modules and local libraries
+extensions/     Canonical home for plugins, starters, and modules
+tests/          Canonical home for integration and repository-level test assets
+tools/          Canonical home for developer and packaging scripts
+build/          Canonical home for build config and packaging assets
+third_party/    Canonical home for vendored source and local binaries
+client/         Legacy source location during migration
+distribution/   Legacy packaging layout during migration
+script/         Legacy script wrappers during migration
+server/         Legacy backend layout during migration
 openspec/       Fork-owned specifications and change proposals
 ```
 
@@ -51,7 +54,7 @@ cd obodc
 ### Build local dependencies
 
 ```bash
-script/build_libs.sh
+tools/scripts/build_libs.sh
 ```
 
 ### Build backend
@@ -72,7 +75,7 @@ export DATABASE_USERNAME=odc@test
 export DATABASE_PASSWORD='your_password'
 export ODC_SERVER_PORT=8989
 
-script/nohup-start-odc.sh
+tools/scripts/nohup-start-odc.sh
 ```
 
 ## Packaging

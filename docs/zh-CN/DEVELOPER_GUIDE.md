@@ -25,15 +25,15 @@ cd obodc
 项目仍然依赖少量存放在 `import/` 目录下、需要本地安装的二进制依赖，先执行：
 
 ```bash
-script/build_libs.sh
+tools/scripts/build_libs.sh
 ```
 
 如果需要本地构建前端资源，再执行：
 
 ```bash
-script/init_node_env.sh
-script/update_submodule.sh
-script/build_sqlconsole.sh
+tools/scripts/init_node_env.sh
+tools/scripts/update_submodule.sh
+tools/scripts/build_sqlconsole.sh
 ```
 
 ## 4. 后端构建
@@ -64,7 +64,7 @@ export ODC_SERVER_PORT=8989
 启动后端：
 
 ```bash
-script/nohup-start-odc.sh
+tools/scripts/nohup-start-odc.sh
 ```
 
 ## 6. 测试
@@ -84,7 +84,7 @@ script/nohup-start-odc.sh
 
 ## 7. 代码格式与 IDE
 
-- 仓库格式化规则位于 `builds/code-style/`
+- 仓库格式化规则当前仍位于 `builds/code-style/`，后续会继续迁到 `build/` 体系下
 - `.idea/codeStyle` 可以作为 IntelliJ IDEA 的默认基线
 - 如果 IDE 需要，请安装 Lombok 支持
 
