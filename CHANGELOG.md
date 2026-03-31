@@ -1,4 +1,4 @@
-# OceanBase Developer Center (ODC) CHANGELOG
+# obodc CHANGELOG
 ## 0.1.0-SNAPSHOT (2026-03-31)
 
 ### Fork Baseline
@@ -8,6 +8,10 @@
 - Initialized a new large-scale metadata runtime spec and first-stage implementation.
 - Added hard guards against oversized metadata payloads, request-path metadata sync storms, and unsafe bulk metadata refresh.
 - Began tracking upstream ODC issues and PRs under a fork-owned workflow.
+
+### Inherited History Notice
+
+Entries below this point are inherited from upstream ODC release history and are preserved for reference.
 
 ## 4.3.4 (2025-05-08)
 

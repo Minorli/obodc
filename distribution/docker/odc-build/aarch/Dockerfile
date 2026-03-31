@@ -6,8 +6,8 @@
 FROM centos:centos8
 
 # set labels
-LABEL maintainer="ODC <odc@oceanbase.com>"
-LABEL description="OceanBase Developer Center (ODC) build image, include node.js and java develop environment"
+LABEL maintainer="obodc maintainers <https://github.com/Minorli/obodc>"
+LABEL description="obodc build image with node.js and Java development environment"
 
 # parameters
 ENV LC_ALL=en_US.UTF-8

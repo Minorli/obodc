@@ -11,8 +11,8 @@ FROM docker.io/openanolis/anolisos:8.6-aarch64 AS arm64-base
 FROM ${ARCH}-base AS base
 
 # set labels
-LABEL maintainer="ODC <odc@oceanbase.com>"
-LABEL description="OceanBase Developer Center (ODC)"
+LABEL maintainer="obodc maintainers <https://github.com/Minorli/obodc>"
+LABEL description="obodc runtime image"
 
 # parameters
 ARG ODC_INSTALL_DIR=/opt/odc
