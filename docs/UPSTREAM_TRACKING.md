@@ -28,19 +28,19 @@ But upstream is no longer treated as the canonical product roadmap for this fork
 
 ## Upstream PR Triage
 
-### Candidate To Cherry-Pick Early
+### Merged Into obodc
 
 - `#4422`
   - `fix(flow): fix multiple database change subtasks do not link description information`
-  - Small scoped flow fix
-  - Low merge risk
-  - URL: `https://github.com/oceanbase/odc/pull/4422`
+  - merged into `obodc/main`
 
 - `#4164`
   - `fix(db-browser): the precision of a MySQL YEAR type can be 0`
-  - Small scoped db-browser correctness fix
-  - Low merge risk
-  - URL: `https://github.com/oceanbase/odc/pull/4164`
+  - merged into `obodc/main`
+
+### Candidate To Cherry-Pick Early
+
+- keep this section for new low-risk candidates after the current merged set
 
 ### Candidate To Evaluate Carefully
 
