@@ -17,14 +17,6 @@ function set_rpm_version() {
     return $?
 }
 
-function set_sqlconsole_submodule_branch() {
-    local version="$1"
-    local branch_name="dev-${version}"
-    git config -f ".gitmodules" --replace-all submodule.client.branch "${branch_name}"
-    local current_branch="$(git config -f .gitmodules --get submodule.client.branch)"
-    echo "set sqlconsole submodule branch, current_branch=${current_branch}"
-}
-
 function main() {
     echo "change version..."
     case X$1 in
@@ -39,7 +31,6 @@ function main() {
         mvn versions:set -DnewVersion="${new_version}"
         mvn versions:commit
         set_rpm_version "${new_version}"
-        set_sqlconsole_submodule_branch "${target_version}"
         ;;
     Xset-release)
         local release_id="$2"

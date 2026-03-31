@@ -1,0 +1,120 @@
+/*
+ * Copyright 2023 OceanBase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import ScanRuleEmpty from '@/component/Empty/ScanRuleEmpty';
+import { Input, Space } from 'antd';
+import { useState } from 'react';
+import { Expression, ExpressionMap, OperatorMap } from '../interface';
+import styles from './index.less';
+import { BooleanOperatorMap, EConditionType } from './InnerRiskLevel';
+const RootNodeContent = ({
+  empty,
+  rootNode,
+  environmentMap,
+  taskTypeIdMap,
+  sqlCheckResultIdMap,
+  showActionButton,
+}) => {
+  const [isHover, setIsHover] = useState<boolean>(false);
+  const getValueMapByExpression = (expression: Expression): { [key in string]: string } => {
+    let valueMap;
+    switch (expression) {
+      case Expression.ENVIRONMENT_NAME: {
+        valueMap = environmentMap;
+        break;
+      }
+      case Expression.TASK_TYPE: {
+        valueMap = taskTypeIdMap;
+        break;
+      }
+      case Expression.SQL_CHECK_RESULT: {
+        valueMap = sqlCheckResultIdMap;
+        break;
+      }
+      case Expression.PROJECT_NAME: {
+        valueMap = {};
+        break;
+      }
+      case Expression.DATABASE_NAME: {
+        valueMap = {};
+        break;
+      }
+      default: {
+        valueMap = {};
+        break;
+      }
+    }
+    return valueMap;
+  };
+  const renderNode = (node) => {
+    const valueMap = getValueMapByExpression(node?.expression);
+    return (
+      <Space size={12}>
+        <div className={styles.treeInputBorder} key={1}>
+          {ExpressionMap?.[node?.expression]}
+        </div>
+        <div className={styles.treeInputBorder} key={2}>
+          {OperatorMap?.[node?.operator]}
+        </div>
+        <Input
+          style={{ width: 250 }}
+          key={3}
+          disabled
+          value={
+            Array.isArray(node?.value)
+              ? node?.value?.map((v) => valueMap?.[v] || v)?.join(', ')
+              : valueMap?.[node?.value] || node?.value
+          }
+        />
+      </Space>
+    );
+  };
+  const renderRootNodeTree = (node) => {
+    if (node?.type === EConditionType.CONDITION) {
+      return <div className={styles.treeScopeContainer}>{renderNode(node)}</div>;
+    } else {
+      return (
+        <div className={styles.treeScopeContainer}>
+          <div
+            className={styles.treeScope}
+            onMouseOver={() => setIsHover(true)}
+            onMouseLeave={() => setIsHover(false)}
+          >
+            <div className={styles.treeScopeBorder} />
+            <div className={styles.treeScopeTitle}>
+              {BooleanOperatorMap?.[node?.booleanOperator]}
+            </div>
+          </div>
+          <div className={styles.treeScopeNode}>
+            {node?.children?.map((child) => {
+              return <>{renderRootNodeTree(child)}</>;
+            })}
+          </div>
+        </div>
+      );
+    }
+  };
+  return (
+    <div className={empty ? styles.rootNodeContentEmpty : styles.rootNodeContent}>
+      {empty ? (
+        <ScanRuleEmpty showActionButton={showActionButton} />
+      ) : (
+        <>{renderRootNodeTree(rootNode)}</>
+      )}
+    </div>
+  );
+};
+export default RootNodeContent;

@@ -27,7 +27,7 @@ tests/          集成测试和仓库级测试资产的规范位置
 tools/          开发与打包脚本的规范位置
 build/          构建配置与打包资产的规范位置
 third_party/    vendored source 和本地二进制依赖的规范位置
-client/         前端 submodule 位置，由 apps/web-client 统一引用
+client/         vendored 前端工作区的兼容别名
 distribution/   指向 build/packaging 和 build/output 的兼容别名
 script/         指向 tools/scripts 的兼容别名
 server/         指向已迁移后端模块的兼容别名

@@ -1,0 +1,267 @@
+/*
+ * Copyright 2023 OceanBase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import Action from '@/component/Action';
+import { IConnectionTestErrorType } from '@/d.ts';
+import { formatMessage } from '@/util/intl';
+import { validTrimEmptyWithWarn } from '@/util/valid';
+import { Col, Form, Input, Row, Select, Space, Typography } from 'antd';
+import React, { useContext, useMemo, useState } from 'react';
+import DatasourceFormContext from '../context';
+import FormItemGroup from '../FormItemGroup';
+import UserInput from './UserInput';
+import ErrorTip from '../components/ErrorTip';
+
+interface IProps {
+  isEdit: boolean;
+}
+
+const PrivateAccount: React.FC<IProps> = function (props) {
+  const { isEdit } = props;
+  const [passwordIsEditing, setPasswordIsEditing] = useState(false);
+
+  const formContext = useContext(DatasourceFormContext);
+  /**
+   * 根据sid获取密码。
+   */
+  const isPwdCopyMode = isEdit;
+
+  /**
+   * 编辑模式下，没按编辑按钮或者sys模式下不可编辑
+   */
+
+  const passwordEditable = isPwdCopyMode ? passwordIsEditing : true;
+
+  const passwordValidStatus = useMemo(() => {
+    if (formContext?.testResult?.active) {
+      return 'success';
+    } else if (
+      [
+        IConnectionTestErrorType.OB_ACCESS_DENIED,
+        IConnectionTestErrorType.OB_MYSQL_ACCESS_DENIED,
+        IConnectionTestErrorType.UNKNOWN,
+        IConnectionTestErrorType.INIT_SCRIPT_FAILED,
+        IConnectionTestErrorType.OB_WEAK_READ_CONSISTENCY_REQUIRED,
+      ].includes(formContext?.testResult?.errorCode)
+    ) {
+      return 'error';
+    }
+  }, [formContext?.testResult]);
+  if (!formContext?.dataSourceConfig?.account) {
+    return null;
+  }
+  return (
+    <>
+      <FormItemGroup
+        label={formatMessage({
+          id: 'odc.AddConnectionForm.Account.PrivateAccount.DatabaseAccount',
+          defaultMessage: '数据库账号',
+        })}
+
+        /*数据库账号*/
+      >
+        {formContext?.dataSourceConfig?.role ? (
+          <Form.Item
+            rules={[{ required: true }]}
+            label={
+              formatMessage({
+                id: 'src.page.Datasource.Datasource.NewDatasourceDrawer.Form.Account.C21B3C92',
+                defaultMessage: '角色',
+              }) /*"角色"*/
+            }
+            name={'userRole'}
+          >
+            <Select
+              style={{ width: '100%' }}
+              options={[
+                {
+                  label: formatMessage({
+                    id: 'src.page.Datasource.Datasource.NewDatasourceDrawer.Form.Account.445C8BBC',
+                    defaultMessage: '默认',
+                  }), //'默认'
+                  value: 'NORMAL',
+                },
+                {
+                  label: 'SYSDBA',
+                  value: 'SYSDBA',
+                },
+                {
+                  label: 'SYSOPER',
+                  value: 'SYSOPER',
+                },
+              ]}
+            />
+          </Form.Item>
+        ) : null}
+        <Row gutter={12}>
+          <Col span={12}>
+            <Form.Item noStyle shouldUpdate>
+              {({ getFieldValue }) => {
+                const clusterId = getFieldValue('clusterName');
+                const tenantId = getFieldValue('tenantName');
+                return (
+                  <Form.Item
+                    validateStatus={passwordValidStatus}
+                    hasFeedback={!!passwordValidStatus}
+                    label={
+                      formatMessage({
+                        id: 'odc.AddConnectionForm.Account.PrivateAccount.DatabaseUsername',
+                        defaultMessage: '数据库用户名',
+                      }) //数据库用户名
+                    }
+                    name="username"
+                    rules={[
+                      {
+                        required: true,
+                        message: formatMessage({
+                          id: 'odc.AddConnectionForm.Account.PrivateAccount.EnterAnAccount',
+                          defaultMessage: '请输入账号',
+                        }),
+                        //请输入账号
+                      },
+
+                      {
+                        validator: validTrimEmptyWithWarn(
+                          formatMessage({
+                            id: 'odc.AddConnectionForm.Account.PrivateAccount.TheEndOfTheAccount',
+                            defaultMessage: '账号首尾包含空格',
+                          }),
+                          //账号首尾包含空格
+                        ),
+                      },
+                    ]}
+                  >
+                    <UserInput
+                      clusterId={clusterId}
+                      tenantId={tenantId}
+                      placeholder={
+                        formatMessage({
+                          id: 'odc.AddConnectionForm.Account.PrivateAccount.EnterADatabaseUsername',
+                          defaultMessage: '请输入数据库用户名',
+                        }) //请输入数据库用户名
+                      }
+                    />
+                  </Form.Item>
+                );
+              }}
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              validateStatus={passwordValidStatus}
+              hasFeedback={!!passwordValidStatus}
+              required
+              label={
+                formatMessage({
+                  id: 'odc.AddConnectionForm.Account.PrivateAccount.DatabasePassword',
+                  defaultMessage: '数据库密码',
+                }) //数据库密码
+              }
+              name={!isPwdCopyMode || passwordIsEditing ? 'password' : null}
+            >
+              {!isPwdCopyMode || passwordIsEditing ? (
+                <Input.Password
+                  autoComplete="new-password"
+                  disabled={!passwordEditable}
+                  defaultValue={''}
+                  style={{
+                    width: '100%',
+                  }}
+                  visibilityToggle={false}
+                  placeholder={
+                    formatMessage({
+                      id: 'odc.AddConnectionForm.Account.PrivateAccount.EnterAPassword',
+                      defaultMessage: '请输入密码',
+                    }) //请输入密码
+                  }
+                />
+              ) : (
+                <Input.Password
+                  style={{
+                    width: '100%',
+                  }}
+                  visibilityToggle={false}
+                  value="******"
+                  disabled
+                />
+              )}
+            </Form.Item>
+          </Col>
+        </Row>
+        <ErrorTip
+          errorMessage={
+            passwordValidStatus === 'error' ? formContext?.testResult?.errorMessage : null
+          }
+        />
+
+        <Row>
+          <Space size={12}>
+            <Action.Link
+              onClick={async () => {
+                return formContext?.test();
+              }}
+            >
+              {formatMessage({
+                id: 'portal.connection.form.test',
+                defaultMessage: '测试连接',
+              })}
+            </Action.Link>
+            {isPwdCopyMode &&
+              (passwordIsEditing ? (
+                <a
+                  onClick={() => {
+                    setPasswordIsEditing(false);
+                    formContext.form?.setFieldsValue({
+                      password: null,
+                    });
+                  }}
+                >
+                  {
+                    formatMessage({
+                      id: 'odc.AddConnectionDrawer.AddConnectionForm.CancelModification',
+                      defaultMessage: '取消修改',
+                    })
+
+                    /* 取消修改 */
+                  }
+                </a>
+              ) : (
+                <a
+                  onClick={() => {
+                    setPasswordIsEditing(true);
+                    formContext.form?.setFieldsValue({
+                      password: '',
+                    });
+                  }}
+                >
+                  {
+                    formatMessage({
+                      id: 'odc.AddConnectionDrawer.AddConnectionForm.ChangePassword',
+                      defaultMessage: '修改密码',
+                    })
+
+                    /* 修改密码 */
+                  }
+                </a>
+              ))}
+          </Space>
+        </Row>
+      </FormItemGroup>
+    </>
+  );
+};
+
+export default PrivateAccount;

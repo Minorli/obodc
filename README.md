@@ -35,7 +35,7 @@ tests/          Canonical home for integration and repository-level test assets
 tools/          Canonical home for developer and packaging scripts
 build/          Canonical home for build config and packaging assets
 third_party/    Canonical home for vendored source and local binaries
-client/         Frontend submodule location; aliased by apps/web-client
+client/         Compatibility alias for the vendored frontend workspace
 distribution/   Compatibility alias for build/packaging and build/output
 script/         Compatibility alias for tools/scripts
 server/         Compatibility aliases for moved backend modules

@@ -1,0 +1,46 @@
+.header {
+  padding: 9px 8px;
+  border-bottom: 1px solid #e9e9e9;
+}
+
+.search {
+  width: 160px;
+  margin-left: 18px;
+  font-size: 12px;
+
+  :global {
+    .ant-input {
+      font-size: 12px;
+    }
+    .anticon {
+      color: var(--icon-color-normal);
+    }
+  }
+}
+.wrap {
+  height: 100%;
+  :global {
+    .ant-spin-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  }
+  .table {
+    flex: 1;
+  }
+  .toolbar {
+    &.simpleHeader {
+      padding-bottom: 5px;
+    }
+    flex: 0;
+    :global {
+      .anticon {
+        color: var(--icon-color-normal);
+      }
+    }
+  }
+  .datasourceSelect {
+    flex: 0;
+  }
+}

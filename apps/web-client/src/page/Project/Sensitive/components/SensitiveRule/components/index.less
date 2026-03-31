@@ -1,0 +1,70 @@
+.formItemGroup {
+  display: flex;
+  margin-bottom: 8px;
+  :global {
+    .ant-form-item {
+      margin-bottom: 0px !important;
+    }
+    .ant-checkbox-wrapper {
+      span:nth-of-type(2) {
+        align-self: center;
+      }
+    }
+  }
+}
+.tip {
+  margin-top: -8px;
+  margin-bottom: 8px;
+  color: var(--neutral-black45-color);
+}
+.groovyScript {
+  width: 548px;
+  margin-bottom: 8px;
+  padding: 12px 24px;
+  background-color: var(--neutral-grey1-color);
+  border-radius: 2px;
+}
+
+.detectWay {
+  margin-bottom: 12px;
+  padding: 16px 16px 4px 16px;
+  background-color: var(--neutral-grey1-color);
+}
+.drawer {
+  :global {
+    .ant-drawer-body {
+      padding: 16px;
+    }
+  }
+}
+
+.errorTip {
+  display: block;
+  margin-top: 3px;
+  color: #ff4d4f;
+}
+.errorTipHidden {
+  display: none;
+}
+
+.editor {
+  :global {
+    .ant-form-item-control-input {
+      padding-top: 12px;
+      border: 1px solid var(--odc-border-color);
+    }
+    .ant-form-item-control-input-content {
+      position: relative;
+      height: 280px;
+    }
+  }
+}
+
+.viewDrawerTable {
+  width: 500px;
+  :global {
+    .ant-spin-nested-loading > .ant-spin-container {
+      padding-bottom: 0px !important;
+    }
+  }
+}

@@ -1,0 +1,71 @@
+##########################################################
+#            OBFlow Secret Scan Ignore List              #
+##########################################################
+# Above the segmentation lines there are suspected privacy information #
+# Please use the file name as the first line and the igored information #
+# should be started with tab. #
+# Under the segmentation lines there are the folders which you need to ignore #
+##########################################################
+**
+    odcsupport@service.alipay.com
+    https://www.oceanbase.com*
+    https://github.com/*
+    https://lodash.com*
+    https://help.aliyun.com/*
+    https://mozilla.github.io*
+    https://stackoverflow.com*
+    http://www.w3.org*
+    https://ant.design*
+    https://859452cf23044aeda8677a8bdcc53081@obc-sentry.oceanbase.com/3
+    https://electronjs.org*
+    https://www.aliyun.com*
+    https://datatracker.ietf.org/*
+    https://momentjs.com/*
+    https://developer.apple.com*
+    https://www.google.com/*
+    https://www.microsoft.com/*
+    https://support.apple.com/*
+    https://www.mozilla.org*
+    https://ur.alipay.com*
+    http://editorconfig.org*
+    http://www.apache.org*
+    https://dev.mysql.com*
+    https://open.feishu.cn*
+    https://jdbc.postgresql.org*
+
+--------------------------------------------------------
+# Should use GLOB wildcard to config and analysis the ignored folder
+# The root patch should start with '/'
+/mock/**
+/tools/obtest/**
+/tools/deploy/**
+/docs/**
+/*.md
+/scripts/**
+/build/**
+/*.yml
+/libraries/**
+/.npmrc
+/src/locale/must/unprocessed-code.ts.txt
+/yarn.lock
+/node_modules/**
+/src/.umi/**
+/release/**
+/dist/**
+/.node/**
+/.vscode/**
+/.git/**
+/config/**
+/src/svgr/**
+/public/**
+/package-lock.json
+/src/workers/**
+/LICENSE
+/pnpm-lock.yaml
+--------------------------------------------------------
+# Config the ignored fold to escape the Chinese scan by GLOB wildcard
+--------------------------------------------------------
+# Set md5 of pemFile string to filter
+# This section must be end up with '--------------------------------------------------------'!!!
+
+--------------------------------------------------------

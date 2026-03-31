@@ -123,8 +123,6 @@ jobs:
     steps:
       - name: Checkout workspace
         uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
       - name: Setup JDK 8
         uses: actions/setup-java@v4
         with:
@@ -270,8 +268,6 @@ jobs:
     steps:
       - name: Checkout workspace
         uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
       # Build jar failed when run on macos-latest, so we need to build and upload jar on ubuntu-latest in the above job
       - name: Download resources
         uses: actions/download-artifact@v4
@@ -345,7 +341,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: odc-client-pkg-${{ matrix.target }}
+          name: obodc-client-pkg-${{ matrix.target }}
           path: |
             apps/web-client/release/*.dmg
             apps/web-client/release/*.deb

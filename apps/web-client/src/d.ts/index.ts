@@ -1,0 +1,4194 @@
+/*
+ * Copyright 2023 OceanBase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { Dayjs } from 'dayjs';
+import { ErrorStrategy } from '@/component/Task/ShadowSyncTask/CreateModal/interface';
+import { PLType } from '@/constant/plType';
+import { IRiskLevel } from '@/d.ts/riskLevel';
+import { IUnauthorizedDBResources, TablePermissionType } from '@/d.ts/table';
+import { EThemeConfigKey } from '@/store/setting';
+import { ButtonType } from 'antd/lib/button'; // ODCUser
+import { ReactNode } from 'react';
+import { DBType, DatabasePermissionType, IDatabase } from './database';
+import { IEnvironment } from './environment';
+import { IProject } from './project';
+import { DBDefaultStoreType } from './table';
+import { EComparisonScope } from './task';
+import { SpaceType } from './_index';
+import { ISQLExecuteTask } from '@/common/network/sql/preHandle';
+import { DirtyRowActionEnum } from '@/component/ExecuteSqlDetailModal/constant';
+import {
+  TableIndex,
+  TableColumn,
+  TablePartition,
+  TablePrimaryConstraint,
+} from '@/page/Workspace/components/CreateTable/interface';
+import { IColumnStoreServerType } from '@/d.ts/table';
+import { LockStrategy } from '@/component/Task/AlterDdlTask/CreateModal';
+export interface IUser {
+  email: string;
+  desc: string;
+  empId: number;
+  gmt_create: number;
+  gmt_modify: number;
+  id: number;
+  accountName: string;
+  name: string;
+  builtIn: boolean;
+  password: string;
+  role: string;
+  roleIds?: number[];
+  enabled: boolean;
+  roles?: IManagerRole[];
+  organizationId: number;
+  systemOperationPermissions?: IPermission[];
+  connectionAccessPermissions?: IPermission[];
+  resourceManagementPermissions?: IPermission[];
+}
+
+export interface IPermission {
+  resourceId: number | string;
+  resourceType: string;
+  actions: string[];
+}
+
+export interface IUserSummary {
+  id: number;
+  name: string;
+  accountName: string;
+  organizationId: number;
+  roles: { name: string; id: number; [key: string]: any }[];
+}
+
+export interface IOrganization {
+  id: number;
+  createTime: string;
+  updateTime: string;
+  uniqueIdentifier: string;
+  name: string;
+  displayName: string;
+  secret: string;
+  description: string;
+  builtin: boolean;
+  type: 'TEAM' | 'INDIVIDUAL';
+}
+
+export enum SQL_OBJECT_TYPE {
+  TABLE,
+  VIEW,
+  FUNCTION,
+}
+
+// 个人配置
+export interface IUserConfig {
+  'odc.sqlexecute.default.delimiter': string;
+  'odc.sqlexecute.default.oracleAutoCommitMode': AutoCommitMode;
+  'odc.sqlexecute.default.mysqlAutoCommitMode': AutoCommitMode;
+  'odc.sqlexecute.default.fetchColumnInfo': 'true' | 'false';
+  'odc.sqlexecute.default.queryLimit': string;
+  'odc.sqlexecute.default.fullLinkTraceEnabled': 'true' | 'false';
+  'odc.sqlexecute.default.continueExecutionOnError': 'true' | 'false';
+  'odc.sqlexecute.default.addInternalRowId': 'true' | 'false';
+  'odc.sqlexecute.default.objectDraggingOption': DragInsertType;
+  'odc.editor.style.theme': 'OceanBase' | 'VSCode';
+  'odc.editor.style.fontSize': 'Small' | 'Normal' | 'Large';
+  'odc.editor.shortcut.executeStatement': string;
+  'odc.editor.shortcut.executeCurrentStatement': string;
+  'odc.appearance.scheme': EThemeConfigKey;
+  'odc.appearance.language': 'FollowSystem' | string;
+  'odc.account.defaultOrganizationType': SpaceType;
+  'odc.account.userBehaviorAnalysisEnabled': 'true' | 'false';
+  'odc.sqlexecute.default.secretKey': string;
+  'odc.sqlexecute.default.queryNumber': string;
+  'odc.task.default.rollbackPlan': 'true' | 'false';
+  'odc.task.default.taskDescriptionPrompt': string;
+}
+
+// 系统配置
+export interface ISystemConfig {
+  'odc.data.export.enabled': string;
+  [key: string]: string;
+}
+
+// 自动提交模式
+export enum AutoCommitMode {
+  ON = 'ON',
+  OFF = 'OFF',
+}
+
+export enum IManagerUserStatus {
+  // 未激活
+  INACTIVATE = 'INACTIVATE',
+  // 停用
+  DEACTIVATE = 'DEACTIVATE',
+  // 启用
+  ACTIVATE = 'ACTIVATE',
+}
+
+/**
+ * SQL 窗口 Session 模式
+ */
+export enum SQLSessionMode {
+  MultiSession = 'MultiSession',
+  SingleSession = 'SingleSession',
+}
+
+export enum IManagerDetailTabs {
+  DETAIL = 'DETAIL',
+  RESOURCE = 'RESOURCE',
+  ROLE = 'ROLE',
+  TASK_FLOW = 'TASK_FLOW',
+}
+
+/**
+ * ODC_CONNECTION
+ODC_PROJECT
+ODC_ROLE
+ODC_USER
+ODC_AUTOMATION_RULE
+ODC_ENVIRONMENT
+ODC_RISK_LEVEL
+ODC_RULESET
+ODC_INTEGRATION
+ODC_RISK_DETECT_RULE
+ODC_APPROVAL_FLOW_CONFIG
+ODC_AUDIT_EVENT
+ */
+export enum IManagerResourceType {
+  user = 'ODC_USER',
+  role = 'ODC_ROLE',
+  project = 'ODC_PROJECT',
+  resource = 'ODC_CONNECTION',
+  odc_audit_event = 'ODC_AUDIT_EVENT',
+  data_masking = 'ODC_DATA_MASKING_RULE',
+  flow_config = 'ODC_FLOW_CONFIG',
+  auto_auth = 'ODC_AUTOMATION_RULE',
+  approval_flow = 'ODC_APPROVAL_FLOW_CONFIG',
+  risk_level = 'ODC_RISK_LEVEL',
+  risk_detect = 'ODC_RISK_DETECT_RULE',
+  ruleset = 'ODC_RULESET',
+  integration = 'ODC_INTEGRATION',
+  environment = 'ODC_ENVIRONMENT',
+  individual_organization = 'ODC_INDIVIDUAL_ORGANIZATION',
+  database = 'ODC_DATABASE',
+  odc_organization_config = 'ODC_ORGANIZATION_CONFIG',
+}
+
+export enum actionTypes {
+  query = 'query',
+  read = 'read',
+  create = 'create',
+  update = 'update',
+  delete = 'delete',
+  writeAndReadConnect = 'connect',
+  readonlyconnect = 'readonlyconnect',
+  apply = 'apply',
+}
+
+export enum IManagePagesKeys {
+  INDEX = 'index',
+  MEMBER_MANAGE = 'member_manage',
+  USER = 'user',
+  ROLE = 'role',
+  PUBLIC_RESOURCE_MANAGE = 'public_resource_manage',
+  CONNECTION = 'connection',
+  RESOURCE = 'resource',
+  AUTO_AUTH = 'auto_auth',
+  RECORD = 'record',
+  RISK_DATA = 'riskdata',
+  TASK_FLOW = 'task',
+  SECURITY_AUDIT = 'security_audit',
+  MASK_DATA = 'mask_data',
+  INTEGRATION_APPROVAL = 'integration_approval',
+  SQL_INTERCEPTOR = 'sql_interceptor',
+}
+
+export interface IManagerUser {
+  id: number;
+  accountName: string;
+  name: string;
+  password: string;
+  builtIn: boolean; // 是否是内置用户
+  roleIds: number[];
+  roles?: IManagerRole[];
+  enabled: boolean;
+  description: string;
+  creatorName: string;
+  createTime: number;
+  updateTime: number;
+  lastLoginTime: number;
+  permissions: {
+    id: number;
+    userId: number;
+    resourceIdentifier: number;
+    action: string;
+  }[];
+  systemOperationPermissions?: IPermission[];
+  resourceManagementPermissions?: IPermission[];
+  extraProperties?: Record<string, string>;
+  errorMessage?: string;
+}
+
+export interface IManagerUserPermission {
+  id: number;
+  userId: number;
+  userName: string;
+  userAccountName: string;
+  permissionId: number;
+  resourceIdentifier: string;
+  action: string;
+  creatorId: number;
+  organizationId: number;
+  createTime: number;
+  updateTime: number;
+}
+
+export enum IRoles {
+  SYSTEM_ADMIN = 1,
+}
+
+export interface IManagerRole {
+  id: number;
+  name: string;
+  type: string;
+  enabled: boolean;
+  builtIn: boolean; // 是否是内置用户
+  systemOperationPermissions: {
+    resourceType: string;
+    resourceId: string;
+    actions: string[];
+  }[];
+
+  connectionAccessPermissions: {
+    resourceType: string;
+    resourceId: string;
+    actions: string[];
+  }[];
+
+  resourceManagementPermissions: {
+    resourceType: string;
+    resourceId: string;
+    actions: string[];
+  }[];
+
+  description: string;
+  creatorName: string;
+  createTime: number;
+  updateTime: number;
+}
+
+export enum IManagerRolePermissionType {
+  connectionAccessPermissions = 'connectionAccessPermissions',
+  resourceManagementPermissions = 'resourceManagementPermissions',
+  systemOperationPermissions = 'systemOperationPermissions',
+}
+
+export interface IResourceRole {
+  id: number;
+  resourceType: string;
+  roleName: string;
+  description: string;
+}
+export interface IResponseDataPage {
+  number: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+export interface IResponseData<T> {
+  contents: T[];
+  page: IResponseDataPage;
+}
+export interface IResponse<T> {
+  data: T;
+  durationMillis: number;
+  httpStatus: string;
+  requestId?: string;
+  server: string;
+  successful: boolean;
+  timestamp: number;
+  traceId: string;
+}
+export enum IConnectionStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  TESTING = 'TESTING',
+  UNKNOWN = 'UNKNOWN',
+  NOPASSWORD = 'NOPASSWORD',
+  DISABLED = 'DISABLED',
+}
+
+export enum AccountType {
+  MAIN = 'MAIN', // 对应 v1版本 test
+  READONLY = 'READONLY', // v2 新增，使用场景：公共连接
+  SYS_READ = 'SYS_READ',
+}
+
+export enum CipherType {
+  RAW = 'RAW',
+  BCRYPT = 'BCRYPT',
+  AES256SALT = 'AES256SALT',
+}
+
+export interface IManagerPublicConnection extends IConnection {
+  // 权限信息（只读，读写）
+  permittedActions: string[];
+  creatorName: string;
+  useSys?: boolean;
+}
+
+export interface IManagerResourceGroup {
+  id: number;
+  name: string;
+  userId: number;
+  creatorName: string;
+  description: string;
+  enabled: boolean;
+  createTime: number;
+  updateTime: number;
+  connections: {
+    name: string;
+    id: number;
+    enabled: boolean;
+  }[];
+}
+// 外部集成
+export interface IManagerIntegration {
+  id: number;
+  type: IntegrationType;
+  name: string;
+  configuration: string;
+  enabled: boolean;
+  encryption: Encryption;
+  creatorId: number;
+  creatorName: string;
+  organizationId: number;
+  description: string;
+  createTime: number;
+  updateTime: number;
+  builtin: boolean;
+}
+
+export interface ITaskFlow {
+  id: number;
+  name: string;
+  builtIn: boolean;
+  externalApproval?: boolean;
+  approvalExpirationIntervalSeconds: number;
+  executionExpirationIntervalSeconds: number;
+  waitExecutionExpirationIntervalSeconds: number;
+  referencedCount: number;
+  nodes: ITaskFlowNode[];
+  organizationId: number;
+  createTime: number;
+  description: string;
+}
+
+export interface ITaskFlowNode {
+  resourceRoleId: number;
+  resourceRoleName: string;
+  externalApprovalId: number;
+  externalApprovalName: string;
+  autoApproval: boolean;
+  sequenceNumber: number;
+  preCheckOverLimit?: boolean;
+}
+
+interface Encryption {
+  enabled: boolean;
+  secret: string;
+  algorithm: EncryptionAlgorithm;
+}
+
+export enum EncryptionAlgorithm {
+  AES256_BASE64 = 'AES256_BASE64',
+  AES192_BASE64_4A = 'AES192_BASE64_4A',
+  RAW = 'RAW',
+}
+
+export enum IntegrationType {
+  // 集成审批
+  APPROVAL = 'APPROVAL',
+  // SQL 审核集成
+  SQL_INTERCEPTOR = 'SQL_INTERCEPTOR',
+  SSO = 'SSO',
+}
+
+export enum AuditEventType {
+  // 个人配置
+  PERSONAL_CONFIGURATION = 'PERSONAL_CONFIGURATION',
+  // 成员管理
+  MEMBER_MANAGEMENT = 'MEMBER_MANAGEMENT',
+  // 密码管理
+  PASSWORD_MANAGEMENT = 'PASSWORD_MANAGEMENT',
+  // 连接管理
+  CONNECTION_MANAGEMENT = 'CONNECTION_MANAGEMENT',
+  // 脚本管理
+  SCRIPT_MANAGEMENT = 'SCRIPT_MANAGEMENT',
+  // 数据库操作
+  DATABASE_OPERATION = 'DATABASE_OPERATION',
+  // 组织配置
+  ORGANIZATION_CONFIGURATION = 'ORGANIZATION_CONFIGURATION',
+  // 资源组管理
+  RESOURCE_GROUP_MANAGEMENT = 'RESOURCE_GROUP_MANAGEMENT',
+  // 任务流程
+  ASYNC = 'ASYNC',
+  IMPORT = 'IMPORT',
+  EXPORT = 'EXPORT',
+  MOCKDATA = 'MOCKDATA',
+  // 影子表
+  SHADOWTABLE_SYNC = 'SHADOWTABLE_SYNC',
+  // 结构比对
+  STRUCTURE_COMPARISON = 'STRUCTURE_COMPARISON',
+  // 分区计划
+  PARTITION_PLAN = 'PARTITION_PLAN',
+  // 操作记录
+  AUDIT_EVENT = 'AUDIT_EVENT',
+  // 流程配置
+  FLOW_CONFIG = 'FLOW_CONFIG',
+  // 脱敏规则
+  DATA_MASKING_RULE = 'DATA_MASKING_RULE',
+  // 脱敏策略
+  DATA_MASKING_POLICY = 'DATA_MASKING_POLICY',
+  // 计划变更
+  ALTER_SCHEDULE = 'ALTER_SCHEDULE',
+  // 数据库管理
+  DATABASE_MANAGEMENT = 'DATABASE_MANAGEMENT',
+  // 权限申请
+  PERMISSION_APPLY = 'PERMISSION_APPLY',
+  // 数据源管理
+  DATASOURCE_MANAGEMENT = 'DATASOURCE_MANAGEMENT',
+  // 项目管理
+  PROJECT_MANAGEMENT = 'PROJECT_MANAGEMENT',
+  // 导出结果集
+  EXPORT_RESULT_SET = 'EXPORT_RESULT_SET',
+  // 项目权限申请
+  APPLY_PROJECT_PERMISSION = 'APPLY_PROJECT_PERMISSION',
+  // SQL 安全规则管理
+  SQL_SECURITY_RULE_MANAGEMENT = 'SQL_SECURITY_RULE_MANAGEMENT',
+  // 自动授权
+  AUTOMATION_RULE_MANAGEMENT = 'AUTOMATION_RULE_MANAGEMENT',
+  // 消息通知
+  NOTIFICATION_MANAGEMENT = 'NOTIFICATION_MANAGEMENT',
+  // 敏感列管理
+  SENSITIVE_COLUMN_MANAGEMENT = 'SENSITIVE_COLUMN_MANAGEMENT',
+  // 多库变更
+  MULTIPLE_ASYNC = 'MULTIPLE_ASYNC',
+  // 多库变更模版
+  DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE_MANAGEMENT = 'DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE_MANAGEMENT',
+}
+
+export enum AuditEventActionType {
+  // 个人配置
+  UPDATE_PERSONAL_CONFIGURATION = 'UPDATE_PERSONAL_CONFIGURATION',
+  // 密码管理
+  CHANGE_PASSWORD = 'CHANGE_PASSWORD',
+  RESET_PASSWORD = 'RESET_PASSWORD',
+  SET_PASSWORD = 'SET_PASSWORD',
+  // 连接管理
+  CREATE_CONNECTION = 'CREATE_CONNECTION',
+  DELETE_CONNECTION = 'DELETE_CONNECTION',
+  UPDATE_CONNECTION = 'UPDATE_CONNECTION',
+  USE_CONNECTION = 'CREATE_SESSION',
+  QUIT_CONNECTION = 'CLOSE_SESSION',
+  ENABLE_CONNECTION = 'ENABLE_CONNECTION',
+  DISABLE_CONNECTION = 'DISABLE_CONNECTION',
+  // 脚本管理
+  CREATE_SCRIPT = 'CREATE_SCRIPT',
+  UPDATE_SCRIPT = 'UPDATE_SCRIPT',
+  DELETE_SCRIPT = 'DELETE_SCRIPT',
+  UPLOAD_SCRIPT = 'UPLOAD_SCRIPT',
+  DOWNLOAD_SCRIPT = 'DOWNLOAD_SCRIPT',
+  /**
+   * 组织配置
+   */
+  UPDATE_ORGANIZATION_CONFIGURATION = 'UPDATE_ORGANIZATION_CONFIGURATION',
+  // 成员管理
+  ADD_USER = 'ADD_USER',
+  UPDATE_USER = 'UPDATE_USER',
+  DELETE_USER = 'DELETE_USER',
+  ADD_ROLE = 'ADD_ROLE',
+  UPDATE_ROLE = 'UPDATE_ROLE',
+  DELETE_ROLE = 'DELETE_ROLE',
+  ENABLE_USER = 'ENABLE_USER',
+  DISABLE_USER = 'DISABLE_USER',
+  ENABLE_ROLE = 'ENABLE_ROLE',
+  DISABLE_ROLE = 'DISABLE_ROLE',
+  // 资源组管理
+  ADD_RESOURCE_GROUP = 'ADD_RESOURCE_GROUP',
+  UPDATE_RESOURCE_GROUP = 'UPDATE_RESOURCE_GROUP',
+  DELETE_RESOURCE_GROUP = 'DELETE_RESOURCE_GROUP',
+  ENABLE_RESOURCE_GROUP = 'ENABLE_RESOURCE_GROUP',
+  DISABLE_RESOURCE_GROUP = 'DISABLE_RESOURCE_GROUP',
+  // 数据库操作
+  SELECT = 'SELECT',
+  DELETE = 'DELETE',
+  INSERT = 'INSERT',
+  REPLACE = 'REPLACE',
+  UPDATE = 'UPDATE',
+  SET = 'SET',
+  DROP = 'DROP',
+  ALTER = 'ALTER',
+  TRUNCATE = 'TRUNCATE',
+  CREATE = 'CREATE',
+  OTHERS = 'OTHERS',
+  // 任务流程
+  ROLLBACK_TASK = 'ROLLBACK_TASK',
+  CREATE_ASYNC_TASK = 'CREATE_ASYNC_TASK',
+  CREATE_MOCKDATA_TASK = 'CREATE_MOCKDATA_TASK',
+  CREATE_IMPORT_TASK = 'CREATE_IMPORT_TASK',
+  CREATE_EXPORT_TASK = 'CREATE_EXPORT_TASK',
+  STOP_ASYNC_TASK = 'STOP_ASYNC_TASK',
+  STOP_MOCKDATA_TASK = 'STOP_MOCKDATA_TASK',
+  STOP_IMPORT_TASK = 'STOP_IMPORT_TASK',
+  STOP_EXPORT_TASK = 'STOP_EXPORT_TASK',
+  EXECUTE_ASYNC_TASK = 'EXECUTE_ASYNC_TASK',
+  EXECUTE_MOCKDATA_TASK = 'EXECUTE_MOCKDATA_TASK',
+  EXECUTE_IMPORT_TASK = 'EXECUTE_IMPORT_TASK',
+  EXECUTE_EXPORT_TASK = 'EXECUTE_EXPORT_TASK',
+  APPROVE_ASYNC_TASK = 'APPROVE_ASYNC_TASK',
+  APPROVE_MOCKDATA_TASK = 'APPROVE_MOCKDATA_TASK',
+  APPROVE_IMPORT_TASK = 'APPROVE_IMPORT_TASK',
+  APPROVE_EXPORT_TASK = 'APPROVE_EXPORT_TASK',
+  REJECT_ASYNC_TASK = 'REJECT_ASYNC_TASK',
+  REJECT_MOCKDATA_TASK = 'REJECT_MOCKDATA_TASK',
+  REJECT_IMPORT_TASK = 'REJECT_IMPORT_TASK',
+  REJECT_EXPORT_TASK = 'REJECT_EXPORT_TASK',
+  // 影子表
+  CREATE_SHADOWTABLE_SYNC_TASK = 'CREATE_SHADOWTABLE_SYNC_TASK',
+  EXECUTE_SHADOWTABLE_SYNC_TASK = 'EXECUTE_SHADOWTABLE_SYNC_TASK',
+  APPROVE_SHADOWTABLE_SYNC_TASK = 'APPROVE_SHADOWTABLE_SYNC_TASK',
+  REJECT_SHADOWTABLE_SYNC_TASK = 'REJECT_SHADOWTABLE_SYNC_TASK',
+  STOP_SHADOWTABLE_SYNC_TASK = 'STOP_SHADOWTABLE_SYNC_TASK',
+  // 结构比对
+  CREATE_STRUCTURE_COMPARISON_TASK = 'CREATE_STRUCTURE_COMPARISON_TASK',
+  STOP_STRUCTURE_COMPARISON_TASK = 'STOP_STRUCTURE_COMPARISON_TASK',
+  EXECUTE_STRUCTURE_COMPARISON_TASK = 'EXECUTE_STRUCTURE_COMPARISON_TASK',
+  APPROVE_STRUCTURE_COMPARISON_TASK = 'APPROVE_STRUCTURE_COMPARISON_TASK',
+  REJECT_STRUCTURE_COMPARISON_TASK = 'REJECT_STRUCTURE_COMPARISON_TASK',
+  // 分区管理
+  CREATE_PARTITION_PLAN_TASK = 'CREATE_PARTITION_PLAN_TASK',
+  STOP_PARTITION_PLAN_TASK = 'STOP_PARTITION_PLAN_TASK',
+  EXECUTE_PARTITION_PLAN_TASK = 'EXECUTE_PARTITION_PLAN_TASK',
+  APPROVE_PARTITION_PLAN_TASK = 'APPROVE_PARTITION_PLAN_TASK',
+  REJECT_PARTITION_PLAN_TASK = 'REJECT_PARTITION_PLAN_TASK',
+  // 导出操作记录
+  EXPORT_AUDIT_EVENT = 'EXPORT_AUDIT_EVENT',
+  // 流程管理
+  CREATE_FLOW_CONFIG = 'CREATE_FLOW_CONFIG',
+  UPDATE_FLOW_CONFIG = 'UPDATE_FLOW_CONFIG',
+  ENABLE_FLOW_CONFIG = 'ENABLE_FLOW_CONFIG',
+  DISABLE_FLOW_CONFIG = 'DISABLE_FLOW_CONFIG',
+  DELETE_FLOW_CONFIG = 'DELETE_FLOW_CONFIG',
+  BATCH_DELETE_FLOW_CONFIG = 'BATCH_DELETE_FLOW_CONFIG',
+  // 数据脱敏 规则
+  CREATE_DATA_MASKING_RULE = 'CREATE_DATA_MASKING_RULE',
+  UPDATE_DATA_MASKING_RULE = 'UPDATE_DATA_MASKING_RULE',
+  ENABLE_DATA_MASKING_RULE = 'ENABLE_DATA_MASKING_RULE',
+  DISABLE_DATA_MASKING_RULE = 'DISABLE_DATA_MASKING_RULE',
+  DELETE_DATA_MASKING_RULE = 'DELETE_DATA_MASKING_RULE',
+  // 数据脱敏 策略
+  CREATE_DATA_MASKING_POLICY = 'CREATE_DATA_MASKING_POLICY',
+  UPDATE_DATA_MASKING_POLICY = 'UPDATE_DATA_MASKING_POLICY',
+  DELETE_DATA_MASKING_POLICY = 'DELETE_DATA_MASKING_POLICY',
+  // 计划变更
+  CREATE_ALTER_SCHEDULE_TASK = 'CREATE_ALTER_SCHEDULE_TASK',
+  STOP_ALTER_SCHEDULE_TASK = 'STOP_ALTER_SCHEDULE_TASK',
+  EXECUTE_ALTER_SCHEDULE_TASK = 'EXECUTE_ALTER_SCHEDULE_TASK',
+  APPROVE_ALTER_SCHEDULE_TASK = 'APPROVE_ALTER_SCHEDULE_TASK',
+  REJECT_ALTER_SCHEDULE_TASK = 'REJECT_ALTER_SCHEDULE_TASK',
+  // 数据库管理
+  ADD_DATABASE = 'ADD_DATABASE',
+  TRANSFER_DATABASE_TO_PROJECT = 'TRANSFER_DATABASE_TO_PROJECT',
+  DELETE_DATABASE = 'DELETE_DATABASE',
+  // 权限申请
+  CREATE_PERMISSION_APPLY_TASK = 'CREATE_PERMISSION_APPLY_TASK',
+  APPROVE_PERMISSION_APPLY_TASK = 'APPROVE_PERMISSION_APPLY_TASK',
+  REJECT_PERMISSION_APPLY_TASK = 'REJECT_PERMISSION_APPLY_TASK',
+  // 数据源管理
+  CREATE_DATASOURCE = 'CREATE_DATASOURCE',
+  DELETE_DATASOURCE = 'DELETE_DATASOURCE',
+  UPDATE_DATASOURCE = 'UPDATE_DATASOURCE',
+  // 项目管理
+  CREATE_PROJECT = 'CREATE_PROJECT',
+  ARCHIVE_PROJECT = 'ARCHIVE_PROJECT',
+  DELETE_PROJECT = 'DELETE_PROJECT',
+  // 导出结果集
+  CREATE_EXPORT_RESULT_SET_TASK = 'CREATE_EXPORT_RESULT_SET_TASK',
+  APPROVE_EXPORT_RESULT_SET_TASK = 'APPROVE_EXPORT_RESULT_SET_TASK',
+  REJECT_EXPORT_RESULT_SET_TASK = 'REJECT_EXPORT_RESULT_SET_TASK',
+  EXECUTE_EXPORT_RESULT_SET_TASK = 'EXECUTE_EXPORT_RESULT_SET_TASK',
+  STOP_EXPORT_RESULT_SET_TASK = 'STOP_EXPORT_RESULT_SET_TASK',
+  // 项目权限申请
+  APPLY_PROJECT_PERMISSION = 'APPLY_PROJECT_PERMISSION',
+  CREATE_APPLY_PROJECT_PERMISSION_TASK = 'CREATE_APPLY_PROJECT_PERMISSION_TASK',
+  APPROVE_APPLY_PROJECT_PERMISSION_TASK = 'APPROVE_APPLY_PROJECT_PERMISSION_TASK',
+  REJECT_APPLY_PROJECT_PERMISSION_TASK = 'REJECT_APPLY_PROJECT_PERMISSION_TASK',
+  STOP_APPLY_PROJECT_PERMISSION_TASK = 'STOP_APPLY_PROJECT_PERMISSION_TASK',
+  // SQL 安全规则管理
+  UPDATE_SQL_SECURITY_RULE = 'UPDATE_SQL_SECURITY_RULE',
+  // 数据库权限申请
+  APPLY_DATABASE_PERMISSION = 'APPLY_DATABASE_PERMISSION',
+  CREATE_APPLY_DATABASE_PERMISSION_TASK = 'CREATE_APPLY_DATABASE_PERMISSION_TASK',
+  APPROVE_APPLY_DATABASE_PERMISSION_TASK = 'APPROVE_APPLY_DATABASE_PERMISSION_TASK',
+  REJECT_APPLY_DATABASE_PERMISSION_TASK = 'REJECT_APPLY_DATABASE_PERMISSION_TASK',
+  STOP_APPLY_DATABASE_PERMISSION_TASK = 'STOP_APPLY_DATABASE_PERMISSION_TASK',
+  // 数据库权限管理
+  DATABASE_PERMISSION_MANAGEMENT = 'DATABASE_PERMISSION_MANAGEMENT',
+  GRANT_DATABASE_PERMISSION = 'GRANT_DATABASE_PERMISSION',
+  REVOKE_DATABASE_PERMISSION = 'REVOKE_DATABASE_PERMISSION',
+  // 表权限申请
+  APPLY_TABLE_PERMISSION = 'APPLY_TABLE_PERMISSION',
+  CREATE_APPLY_TABLE_PERMISSION_TASK = 'CREATE_APPLY_TABLE_PERMISSION_TASK',
+  APPROVE_APPLY_TABLE_PERMISSION_TASK = 'APPROVE_APPLY_TABLE_PERMISSION_TASK',
+  REJECT_APPLY_TABLE_PERMISSION_TASK = 'REJECT_APPLY_TABLE_PERMISSION_TASK',
+  STOP_APPLY_TABLE_PERMISSION_TASK = 'STOP_APPLY_TABLE_PERMISSION_TASK',
+  // 表权限管理
+  TABLE_PERMISSION_MANAGEMENT = 'TABLE_PERMISSION_MANAGEMENT',
+  GRANT_TABLE_PERMISSION = 'GRANT_TABLE_PERMISSION',
+  REVOKE_TABLE_PERMISSION = 'REVOKE_TABLE_PERMISSION',
+  // 自动授权
+  CREATE_AUTOMATION_RULE = 'CREATE_AUTOMATION_RULE',
+  ENABLE_AUTOMATION_RULE = 'ENABLE_AUTOMATION_RULE',
+  DISABLE_AUTOMATION_RULE = 'DISABLE_AUTOMATION_RULE',
+  UPDATE_AUTOMATION_RULE = 'UPDATE_AUTOMATION_RULE',
+  DELETE_AUTOMATION_RULE = 'DELETE_AUTOMATION_RULE',
+  // 消息通知
+  CREATE_NOTIFICATION_CHANNEL = 'CREATE_NOTIFICATION_CHANNEL',
+  UPDATE_NOTIFICATION_CHANNEL = 'UPDATE_NOTIFICATION_CHANNEL',
+  DELETE_NOTIFICATION_CHANNEL = 'DELETE_NOTIFICATION_CHANNEL',
+  BATCH_UPDATE_NOTIFICATION_POLICIES = 'BATCH_UPDATE_NOTIFICATION_POLICIES',
+  // 敏感列管理
+  BATCH_CREATE_SENSITIVE_COLUMNS = 'BATCH_CREATE_SENSITIVE_COLUMNS',
+  BATCH_UPDATE_SENSITIVE_COLUMNS = 'BATCH_UPDATE_SENSITIVE_COLUMNS',
+  BATCH_DELETE_SENSITIVE_COLUMNS = 'BATCH_DELETE_SENSITIVE_COLUMNS',
+  ENABLE_SENSITIVE_COLUMN = 'ENABLE_SENSITIVE_COLUMN',
+  DISABLE_SENSITIVE_COLUMN = 'DISABLE_SENSITIVE_COLUMN',
+
+  // #region 多库变更
+  CREATE_MULTIPLE_ASYNC_TASK = 'CREATE_MULTIPLE_ASYNC_TASK',
+  EXECUTE_MULTIPLE_ASYNC_TASK = 'EXECUTE_MULTIPLE_ASYNC_TASK',
+  STOP_MULTIPLE_ASYNC_TASK = 'STOP_MULTIPLE_ASYNC_TASK',
+  REJECT_MULTIPLE_ASYNC_TASK = 'REJECT_MULTIPLE_ASYNC_TASK',
+  APPROVE_MULTIPLE_ASYNC_TASK = 'APPROVE_MULTIPLE_ASYNC_TASK',
+  // #endregion
+
+  // #region 多库变更模版管理
+  CREATE_DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE = 'CREATE_DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE',
+  DELETE_DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE = 'DELETE_DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE',
+  UPDATE_DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE = 'UPDATE_DATABASE_CHANGE_CHANGING_ORDER_TEMPLATE',
+  // #endregion
+}
+
+export enum AuditEventDialectType {
+  OB_MYSQL = 'OB_MYSQL',
+  OB_ORACLE = 'OB_ORACLE',
+  ORACLE = 'ORACLE',
+  MYSQL = 'MYSQL',
+  DORIS = 'DORIS',
+  PG = 'POSTGRESQL',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export enum AuditEventResult {
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+}
+
+export interface IAudit {
+  id: number;
+  type: AuditEventType;
+  typeName: string;
+  action: AuditEventActionType;
+  actionName: string;
+  connectionId: number;
+  connectionName: string;
+  connectionHost: string;
+  connectionPort: number;
+  connectionClusterName: string;
+  connectionTenantName: string;
+  connectionUsername: string;
+  connectionDialectType: AuditEventDialectType;
+  clientIpAddress: string;
+  serverIpAddress: string;
+  detail: string; // json string
+  result: AuditEventResult;
+  userId: number;
+  username: string;
+  organizationId: number;
+  taskId: number;
+  startTime: number;
+  endTime: number;
+}
+
+export interface IAuditEvent {
+  id: number;
+  methodSignature: string;
+  type: AuditEventType;
+  typeName: string;
+  action: AuditEventActionType;
+  actionName: string;
+  sidExtractExpression: string;
+  inConnection: boolean;
+  enabled: boolean;
+}
+
+export interface IAuditExport {
+  eventActions: AuditEventActionType[];
+  userIds: number[];
+  connectionIds: number[];
+  results: AuditEventResult;
+  format: 'Excel' | 'CSV';
+  startTime: number;
+  endTime: number;
+}
+
+// 用户保存的脚本
+
+export type ISQLScript = IScriptMeta;
+
+export enum ConnectionMode {
+  MYSQL = 'MYSQL',
+  DORIS = 'DORIS',
+  PG = 'POSTGRESQL',
+  ORACLE = 'ORACLE',
+  OB_MYSQL = 'OB_MYSQL',
+  OB_ORACLE = 'OB_ORACLE',
+  ALL = 'ALL',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export enum IConnectionType {
+  PRIVATE = 'PRIVATE', // 个人连接
+  ORGANIZATION = 'ORGANIZATION',
+  ALL = 'ALL',
+}
+
+export interface IManageUserListParams {
+  authorizedResource?: string;
+  includePermission?: boolean;
+  roleId?: number[];
+  name?: string;
+  accountName?: string;
+  enabled?: boolean;
+  page?: number;
+  size?: number;
+  sort?: string;
+  minPrivilege?: string;
+}
+
+export interface IRequestListParamsV2 {
+  page?: number;
+  size?: number;
+  minPrivilege?: string;
+  [key: string]: any;
+}
+
+export interface IConnection {
+  id: number; // sid
+  ownerId: number;
+  environmentId: number;
+  environmentName: string;
+  environmentStyle: string;
+  sslConfig: {
+    enabled: boolean;
+    clientCertObjectId?: string;
+    clientKeyObjectId?: string;
+    CACertObjectId?: string;
+  };
+  region?: string;
+  organizationId: number;
+  creatorId: number; // userId
+  creator: string;
+  name: string; // 连接名称，sessionName
+  dialectType: ConnectionMode; // dbMode
+  host: string; // 主机，公有云连接格式为 {domain}:{port}
+  port: number; // 端口，公有云连接不需要设置 port
+  clusterName: string; // OceanBase 集群称，cluster 公有云连接不需要设置
+  tenantName: string; // OceanBase 租户名称，tenant 公有云连接不需要设置
+  tenantNickName?: string;
+  username: string; // 数据库登录用户名，dbUser
+  password: string; // 连接密码，null 表示不设置，空字符串表示空密码，当 passwordSaved=true 时，不能为 null
+  passwordEncrypted: string;
+  sysTenantUsername: string; // 系统租户账号用户名称，sysUser
+  sysTenantPassword: string; // 系统租户账号密码，sysUserPassword, sysTenantUsername 为 null 时无效，空字符串表示空密码
+  queryTimeoutSeconds: number; // 查询超时时间（单位：秒），sessionTimeoutS
+  createTime: number; // 创建时间，gmtCreated
+  updateTime: number; // 修改时间，gmtModified
+  status: {
+    status: IConnectionStatus; // 连接状态，注意不是 Session 状态
+    errorMessage: string;
+  };
+
+  properties: any;
+  copyFromId: number; // 从 copyFromSid 的配置拷贝密码字段的值，对应 /api/v1 的 copyFromSid <br>\n- 值为 null：不拷贝 <br>\n- 值不为 null： 则当密码字段为 null 时，从 copyFromSid 连接信息里拷贝密码字段
+  lastAccessTime: string; // 最近一次访问连接时间
+  enabled: boolean; // 是否启用，对应v1版本的active，v1版本该字段并没有有效值
+  passwordSaved: boolean; // 是否保存密码
+  cipher: CipherType; // 加密算法
+  salt: string;
+  configUrl?: string; // v1版本保留，v2版本后端已经不支持，前端暂先保留
+  temp?: boolean; // 是否是隐藏连接
+  cloudDBAddress?: string; // v1版本保留 v2版本后端没有这个字段，可能是前段动态生成的值
+  sessionTimeout?: number; // 公有云字段, v1 是 sessionTimeoutS, 对应 v2的queryTimeoutSeconds
+  permittedActions?: string[];
+  supportedOperations?: string[];
+  type: ConnectType;
+  errorMessage?: string;
+  jdbcUrlParameters?: Record<string, string>;
+  sessionInitScript?: string;
+  defaultSchema?: string;
+  projectId?: number;
+  sid?: string;
+  serviceName?: string;
+  userRole?: string;
+  readonly projectName?: string;
+  catalogName?: string;
+}
+
+export interface IConnectionLabel {
+  labelName: string;
+  labelColor: string;
+  id: number;
+  gmtCreated?: ITimestamp;
+  gmtModified?: ITimestamp;
+  userId?: string | number;
+}
+
+export interface IConnectionConfigModal {
+  title: string;
+  content?: string[];
+  viewMethods?: {
+    method: string;
+    url: string;
+    type?: string;
+  }[];
+
+  url?: string;
+  desc?: string;
+  logo?: string;
+  titleLogo?: string;
+  footerLogo?: string;
+  showType?: string;
+}
+
+export interface ITimestamp {
+  date: number;
+  day: number;
+  hours: number;
+  minutes: number;
+  month: number;
+  nanos: number;
+  seconds: number;
+  time: number;
+  timezoneOffset: number;
+  year: number;
+}
+
+export interface IConnectionFormData extends Partial<IConnection> {
+  addressType?: ConnectionAddressType;
+  useSys?: boolean;
+}
+
+export interface IRemoteCustomConnectionData extends IConnectionFormData {
+  /** “用户名@租户名#集群名”或者“集群名:租户名:用户名” */
+  unionDbUser?: string;
+  /** 额外参数 */
+  interceptData?: {
+    [key: string]: any;
+  };
+
+  /**
+   * 登录 token
+   */
+  accountVerifyToken?: string;
+}
+
+export enum IConnectionPropertyType {
+  STRING = 'string',
+  TEXT = 'text',
+  NUMERIC = 'numeric',
+  ENUM = 'enum',
+  BOOLEAN = 'boolean',
+  FLIP_BOOLEAN = 'flip_boolean',
+  AUTOCOMPLETE = 'autocomplete',
+  MULTISELECT = 'multiselect',
+  TIMESTAMP = 'timestamp',
+  YEAR = 'year',
+  DATE = 'date',
+  DATETIME = 'datetime',
+  TIME = 'time',
+  OBJECT = 'object',
+}
+
+export enum IConnectionTestErrorType {
+  UNKNOWN_HOST = 'ConnectionUnknownHost',
+  HOST_UNREACHABLE = 'ConnectionHostUnreachable',
+  UNKNOWN_PORT = 'ConnectionUnknownPort',
+  ILLEGAL_CONNECT_TYPE = 'ConnectionUnsupportedConnectType',
+  OB_ACCESS_DENIED = 'ObAccessDenied',
+  OB_MYSQL_ACCESS_DENIED = 'ObMysqlAccessDenied',
+  UNKNOWN = 'Unknown',
+  CONNECT_TYPE_NOT_MATCH = 'ConnectionDatabaseTypeMismatched',
+  INIT_SCRIPT_FAILED = 'ConnectionInitScriptFailed',
+  OB_WEAK_READ_CONSISTENCY_REQUIRED = 'ObWeakReadConsistencyRequired',
+  ACCESS_DENIED = 'AccessDenied',
+  INVALID_ACCESSKEY_ID = 'InvalidAccessKeyId',
+  SIGNATURE_DOES_NOT_MATCH = 'SignatureDoesNotMatch',
+}
+
+export interface IConnectionProperty {
+  key: string;
+  value: string;
+  unit?: string;
+  valueType: IConnectionPropertyType;
+  valueEnums?: string[];
+  initialValue: string;
+  modified?: boolean; // 前端修改标志
+
+  changed: boolean; // 后端保存的修改标记
+}
+export enum ConnectionAddressType {
+  HOST_PORT = 'HOST_PORT',
+  CONFIG_URL = 'CONFIG_URL',
+}
+
+export enum PageType {
+  SQL = 'SQL',
+  PL = 'PL',
+  CREATE_TABLE = 'CREATE_TABLE',
+  TABLE = 'TABLE',
+  DATABASE = 'DATABASE',
+  SESSION_PARAM = 'SESSION_PARAM',
+  SESSION_MANAGEMENT = 'SESSION_MANAGEMENT',
+  RECYCLE_BIN = 'RECYCLE_BIN',
+  VIEW = 'VIEW',
+  CREATE_VIEW = 'CREATE_VIEW',
+  FUNCTION = 'FUNCTION',
+  CREATE_FUNCTION = 'CREATE_FUNCTION',
+  PROCEDURE = 'PROCEDURE',
+  CREATE_PROCEDURE = 'CREATE_PROCEDURE',
+  CREATE_SEQUENCE = 'CREATE_SEQUENCE',
+  SEQUENCE = 'SEQUENCE',
+  CREATE_PACKAGE = 'CREATE_PACKAGE',
+  EDIT_PACKAGE = 'EDIT_PACKAGE',
+  EDIT_PL = 'EDIT_PL',
+  PACKAGE = 'PACKAGE',
+  IMPORT = 'IMPORT',
+  EXPORT = 'EXPORT',
+  TASKS = 'TASKS',
+  OB_CLIENT = 'OB_CLIENT',
+  CREATE_TRIGGER = 'CREATE_TRIGGER', // 触发器创建页
+  CREATE_TRIGGER_SQL = 'CREATE_TRIGGER_SQL', // 触发器创建页
+  TRIGGER = 'TRIGGER', // 触发器详情页
+  CREATE_TYPE = 'CREATE_TYPE', // 类型创建页
+  TYPE = 'TYPE', // 类型详情页
+  CREATE_SYNONYM = 'CREATE_SYNONYM', // 同义词创建页
+  SYNONYM = 'SYNONYM',
+  SQL_RESULTSET_VIEW = 'SQL_RESULTSET_VIEW', // 结果集查看页面
+  BATCH_COMPILE_FUNCTION = 'BATCH_COMPILE_FUNCTION', // 批量编译
+  BATCH_COMPILE_PACKAGE = 'BATCH_COMPILE_PACKAGE',
+  BATCH_COMPILE_PROCEDURE = 'BATCH_COMPILE_PROCEDURE',
+  BATCH_COMPILE_TRIGGER = 'BATCH_COMPILE_TRIGGER',
+  BATCH_COMPILE_TYPE = 'BATCH_COMPILE_TYPE',
+  TUTORIAL = 'TUTORIAL',
+  /** 物化视图 */
+  MATERIALIZED_VIEW = 'MATERIALIZED_VIEW',
+  CREATE_MATERIALIZED_VIEW = 'CREATE_MATERIALIZED_VIEW',
+}
+
+export interface IPage {
+  key: string;
+  title: string;
+  type: PageType;
+  startSaving?: boolean;
+  isSaved: boolean;
+  isDocked?: boolean; // 是否常驻
+  params?: any; // 附加参数
+}
+export interface ISQLPage extends IPage {
+  resultSets: IResultSet[];
+}
+
+export enum ColumnOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+  NONE = 'NONE',
+}
+
+export interface IColumn {
+  key: string;
+  name: string;
+  editable: boolean;
+  editor?: ReactNode;
+  ellipsis?: boolean;
+  valueType?: IConnectionPropertyType;
+  modified?: boolean;
+  order?: ColumnOrder;
+  dataType?: string;
+  formatter?: ({ value }: { value: string }) => void;
+  width?: number;
+  scale?: number;
+  precision?: number;
+  nativeDataType?: string;
+  length?: number;
+}
+
+export interface ResultSetColumn {
+  /**
+   * 唯一标识set column的key，客户端自己生成
+   */
+  key: string;
+  /**
+   * 展示的名字，例如别名
+   */
+  name: string;
+  /**
+   * 实际对应的列名
+   */
+  columnName: string;
+  columnType: string;
+  columnComment: string;
+  internal: boolean;
+  readonly: boolean;
+  /**
+   * 是否脱敏
+   */
+  masked?: boolean;
+}
+
+// @ts-ignore
+
+export interface IResultSet extends Partial<ISqlExecuteResult> {
+  type?: 'DDL' | 'DML' | 'LOG';
+  uniqKey?: string;
+  columns: ResultSetColumn[];
+  columnsToDisplay?: string[];
+  rows: any[];
+  traceId?: string;
+  selectedIndexes?: any[]; // 后端使用子 SQL 拼接 limit 解决
+
+  initialSql: string;
+  /** 用户输入的SQL，用来判断编辑的时候使用 */
+  originSql?: string;
+  // 是否锁定
+  locked?: boolean;
+  // 是否支持编辑
+  editable?: boolean;
+  // 是否正在编辑
+  isEditing?: boolean;
+  allowExport?: boolean;
+  columnList?: ITableColumn[]; // 是否已经查询过支持编辑，该接口响应很慢，尽可能少调用
+  resultSetMetaData?: {
+    columnList?: ITableColumn[];
+    fieldMetaDataList?: IColumnMetaData[];
+    table?: ITable;
+    editable: boolean;
+  };
+  timer?: ISqlExecuteResultTimer;
+
+  isQueriedEditable?: boolean;
+  logTypeData?: {
+    track: string;
+    status: ISqlExecuteResultStatus;
+    total: number;
+    executeSql: string;
+    dbmsOutput: string;
+    statementWarnings: string;
+    sqlType: SqlType;
+    checkViolations: {
+      col: number;
+      localizedMessage: string;
+      row: number;
+      text: string;
+      level?: number;
+      type: string;
+    }[];
+  }[];
+
+  schemaName?: string;
+  currentExecuteInfo?: IExecutingInfo;
+}
+
+export interface IColumnMetaData {
+  autoIncrement: boolean;
+  caseSensitive: boolean;
+  catalogName: string;
+  columnClassName: string;
+  columnComment: string;
+  columnsDisplaySize: number;
+  columnLabel: string;
+  columnName: string;
+  columnType: number;
+  columnTypeName: string;
+  currency: boolean;
+  definitelyWritable: boolean;
+  editable: boolean;
+  internal: boolean;
+  masked: boolean;
+  nullable: number;
+  precision: number;
+  readOnly: boolean;
+  scale: number;
+  schemaName: string;
+  searchable: boolean;
+  signed: boolean;
+  tableName: string;
+  writeable: boolean;
+}
+
+/** 日志相关 */
+export enum ILogType {
+  INFO = 'INFO',
+  WARN = 'WARN',
+  ERROR = 'ERROR',
+}
+
+export interface ILogItem {
+  type: ILogType;
+  message: string;
+  timestamp?: string;
+}
+
+export enum ResourceTabKey {
+  TABLE = 'TABLE',
+  VIEW = 'VIEW',
+  FUNCTION = 'FUNCTION',
+  PROCEDURE = 'PROCEDURE',
+  SEQUENCE = 'SEQUENCE',
+  PACKAGE = 'PACKAGE',
+  // 触发器
+  TRIGGER = 'TRIGGER',
+  // 类型
+  TYPE = 'TYPE',
+  // 同义词
+  SYNONYM = 'SYNONYM',
+}
+
+/** 数据库 Schema 相关 */
+
+// 数据库详情
+
+export interface IDatabaseShardRule {
+  instanceNum: number;
+  jdbc: string;
+  shardNum: number;
+}
+
+export interface IDataType {
+  databaseType: string;
+  showType: ColumnShowType;
+}
+
+// 表
+
+export interface ITable {
+  sid: string;
+  tableName: string;
+  databaseName: string;
+  tableSize: string;
+  character: string;
+  collation: string;
+  comment: string;
+  partitioned: boolean;
+  ddlSql: string;
+  databaseSid: string;
+  gmtCreated: number;
+  gmtModified: number;
+  increment: number;
+  columns: Partial<ITableColumn>[];
+  indexes: Partial<ITableIndex>[];
+  partitions: Partial<ITablePartition>[];
+  constraints: Partial<ITableConstraint>[];
+  _version?: any;
+  authorizedPermissionTypes?: TablePermissionType[];
+  database?: IDatabase;
+  createTime?: number;
+  id?: number;
+  name?: string;
+  organizationId?: number;
+  updateTime?: number;
+  type?: DbObjectType;
+}
+
+interface IEditable {
+  key?: string;
+  modified?: boolean;
+  _created?: boolean;
+  _deleted?: boolean;
+  tableName?: string;
+  initialValue?: any;
+}
+
+// 表字段
+
+export interface ITableColumn extends IEditable {
+  allowNull: boolean;
+  autoIncreament: boolean;
+  /**
+   * @deprecated
+   */
+  columnName: string;
+  name: string;
+  comment: string;
+  /**
+   * @deprecated
+   */
+  dataType: string;
+  type: string;
+  dataShowType: ColumnShowType;
+  defaultValue: any;
+  length: number;
+  ordinalPosition: number;
+  primaryKey: boolean;
+  typeName: string;
+}
+
+export enum ColumnShowType {
+  BOOLEAN = 'BOOLEAN',
+  TEXT = 'TEXT',
+  OBJECT = 'OBJECT',
+  NUMERIC = 'NUMERIC',
+  TIMESTAMP = 'TIMESTAMP',
+  DATE = 'DATE',
+  TIME = 'TIME',
+  DATETIME = 'DATETIME',
+  YEAR = 'YEAR',
+  MONTH = 'MONTH',
+  ENUM = 'ENUM', // 枚举类型
+  SET = 'SET',
+} // 集合类型
+
+// 索引
+
+export enum IndexRange {
+  GLOBAL = 'GLOBAL',
+  LOCAL = 'LOCAL',
+}
+
+export enum IndexType {
+  PRIMARY = 'PRIMARY',
+  UNIQUE = 'UNIQUE',
+  NORMAL = 'NORMAL',
+}
+
+export interface ITableIndex extends IEditable {
+  name: string;
+  columnNames: string[];
+  tableName: string;
+  type: string;
+  unique: boolean;
+  comment: string;
+  range: IndexRange;
+  primaryKey: boolean;
+}
+
+// 分区规则
+
+export enum IPartitionType {
+  HASH = 'HASH',
+  KEY = 'KEY',
+  RANGE = 'RANGE',
+  RANGE_COLUMNS = 'RANGE_COLUMNS',
+  LIST = 'LIST',
+  LIST_COLUMNS = 'LIST_COLUMNS',
+  NONE = 'NONE',
+}
+
+export interface ITablePartition extends IEditable {
+  avgRowLength: number;
+  comment: string;
+  desc: string;
+  expression: string;
+  partName: string;
+  partNumber: number;
+  partType: IPartitionType;
+  partValues: string;
+  position: number;
+  subPartList: any[];
+  tableRows: number;
+  positionValid: boolean;
+}
+
+// 函数
+
+export interface IFunction {
+  ddl: string;
+  definer: string;
+  funName: string;
+  returnType: string;
+  status: string;
+  params: IPLParam[];
+  createTime?: number;
+  modifyTime?: number;
+  errorMessage: string;
+  characteristic: IRoutineCharacteristic;
+  variables: {
+    varName: string;
+    varType: string;
+  }[];
+}
+
+export enum ParamMode {
+  IN = 'IN',
+  OUT = 'OUT',
+  INOUT = 'INOUT',
+}
+
+export interface IRoutineCharacteristic {
+  deterministic: boolean;
+  dataNature: 'CONTAINS SQL' | 'NO SQL' | 'READS SQL' | 'MODIFIES SQL';
+  sqlSecurity: 'DEFINER' | 'INVOKER';
+}
+
+export interface IPLParam {
+  dataType: string;
+  defaultValue: string;
+  /**
+   * odc 自定义属性，保存原value
+   */
+  originDefaultValue?: string;
+  paramMode: ParamMode;
+  paramName: string;
+  seqNum: number;
+  dragIdx: number;
+}
+
+// 存储过程
+
+export interface IProcedure {
+  ddl: string;
+  definer: string;
+  params: IPLParam[];
+  proName: string;
+  createTime: number;
+  modifyTime: number;
+  status: string;
+  errorMessage: string;
+  characteristic: IRoutineCharacteristic;
+  variables: {
+    varName: string;
+    varType: string;
+  }[];
+}
+
+// 程序包
+
+export interface IPackage {
+  packageBody?: {
+    basicInfo: {
+      ddl: string;
+      definer: string;
+      createTime: number;
+      modifyTime: number;
+    };
+    variables: {
+      varName: string;
+      varType: string;
+    }[];
+    functions: any[];
+    procedures: any[];
+  };
+
+  packageHead: {
+    basicInfo: {
+      ddl: string;
+      definer: string;
+      createTime: number;
+      modifyTime: number;
+    };
+    variables: {
+      varName: string;
+      varType: string;
+    }[];
+    functions: any[];
+    procedures: any[];
+  };
+
+  packageName: string;
+  packageType: string;
+  /**
+   * 判断package加载来源
+   */
+  singleLoad?: boolean;
+  status: string;
+  errorMessage: string;
+}
+
+// 视图
+
+export interface IView {
+  checkOption?: string;
+  columns: ITableColumn[];
+  comment?: string;
+  ddl: string;
+  definer?: string;
+  updatable?: boolean;
+  viewName: string;
+}
+
+export enum RefreshMethod {
+  REFRESH_FAST = 'REFRESH_FAST',
+  REFRESH_FORCE = 'REFRESH_FORCE',
+  REFRESH_COMPLETE = 'REFRESH_COMPLETE',
+  NEVER_REFRESH = 'NEVER_REFRESH',
+}
+
+// 物化视图
+export interface IMaterializedView {
+  info?: MaterializedViewInfo;
+  primaryConstraints?: TablePrimaryConstraint[];
+  columns?: TableColumn[];
+  indexes?: TableIndex[];
+  partitions?: Partial<TablePartition>;
+  subpartitions?: TablePartition;
+}
+
+export interface MaterializedViewRecord {
+  additionalExecutions: string;
+  elapsedTime: number;
+  endTime: number;
+  finalNumRows: number;
+  initialNumRows: number;
+  logPurgeTime: number;
+  logSetupTime: number;
+  mvName: string;
+  mvOwner: string;
+  refreshId: number;
+  refreshMethod: string;
+  refreshOptimizations: string;
+  startTime: number;
+}
+
+export interface RefreshSchedule {
+  startStrategy: 'START_NOW' | 'START_AT';
+  startWidth: string;
+  interval: number;
+  unit: RefreshScheduleUnit;
+  startExpression: string;
+  nextExpression: string;
+}
+
+export enum RefreshScheduleUnit {
+  SECOND = 'SECOND',
+  MINUTE = 'MINUTE',
+  HOUR = 'HOUR',
+  DAY = 'DAY',
+  WEEK = ' WEEK',
+  MONTH = 'MONTH',
+  YEAR = 'YEAR',
+}
+
+export interface MaterializedViewInfo {
+  columnGroups: IColumnStoreServerType[];
+  authorizedPermissionTypes?: TablePermissionType[];
+  ddl?: string;
+  subpartitions?: TablePartition;
+  enableQueryComputation?: boolean;
+  enableQueryRewrite?: boolean;
+  name: string;
+  parallelismDegree?: number;
+  schemaName?: string;
+  refreshMethod?: RefreshMethod;
+  refreshSchedule?: RefreshSchedule;
+  lastRefreshType: RefreshMethod;
+  lastRefreshStartTime: number;
+  lastRefreshEndTime: number;
+}
+
+// 程序包
+
+export interface IPackage {
+  ddl: string;
+  definer: string;
+  updatable: boolean;
+  packageName: string;
+}
+
+// 结果集，历史记录追加
+
+// 触发器
+interface ITriggerCell {
+  name: string;
+  owner: string;
+  type: string;
+  status: string;
+  [key: string]: string;
+}
+
+export interface ITrigger {
+  triggerName: string;
+  enableState: TriggerState;
+  owner: string;
+  baseObject: ITriggerCell;
+  correlation: ITriggerCell[];
+  ddl: string;
+  status: string;
+  errorMessage: string;
+}
+
+// 触发器启用状态
+export enum TriggerState {
+  enabled = 'ENABLED',
+  disabled = 'DISABLED',
+}
+
+export enum TriggerSchemaType {
+  TABLE = 'TABLE',
+}
+
+export enum TriggerType {
+  SIMPLE = 'SIMPLE',
+}
+
+export enum TriggerMode {
+  BEFORE = 'BEFORE',
+  AFTER = 'AFTER',
+}
+
+export enum TriggerGrade {
+  ROW = 'row',
+}
+
+export enum TriggerEvents {
+  INSERT = 'INSERT',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+}
+
+export interface ITriggerBaseInfoForm {
+  enableState: TriggerState;
+  schemaMode: string;
+  schemaName: string;
+  schemaType: TriggerSchemaType;
+  triggerName: string;
+}
+
+export interface ITriggerAdancedInfoForm {
+  referencesNewValue: string;
+  referencesOldValue: string;
+  sqlExpression: string;
+  triggerColumns: string[];
+  triggerEvents: TriggerEvents[];
+  triggerGrade: string;
+  triggerMode: TriggerMode;
+  triggerType: TriggerType;
+}
+
+export interface ITriggerFormData {
+  baseInfo: ITriggerBaseInfoForm;
+  adancedInfo: ITriggerAdancedInfoForm;
+}
+
+export interface ITriggerForm {
+  enableState: TriggerState;
+  references?: {
+    referName: string;
+    referenceType: string;
+  }[];
+
+  rowLevel: boolean;
+  schemaMode: string;
+  schemaName: string;
+  schemaType: TriggerSchemaType;
+  sqlExpression?: string;
+  triggerEvents: {
+    column?: string;
+    dmlEvent: string;
+  }[];
+
+  triggerMode: TriggerMode;
+  triggerName: string;
+  triggerType: TriggerType;
+}
+
+// 类型
+export interface IType {
+  typeName: string;
+  type: TypeCode;
+  owner?: string;
+  createTime?: number;
+  lastDdlTime?: number;
+  ddl?: string;
+  status?: string;
+  errorMessage: string;
+  typeDetail: {
+    functions: IFunction[];
+    procedures: IProcedure[];
+    variables: {
+      varName: string;
+      varType: string;
+    }[];
+  };
+}
+
+export enum TypeCode {
+  OBJECT = 'OBJECT',
+  VARRAY = 'VARRAY',
+  TABLE = 'TABLE',
+}
+
+export interface ITypeForm {
+  typeName: string;
+  typeCode: TypeCode;
+}
+
+// 同义词
+export interface ISynonym {
+  synonymName: string;
+  tableOwner: string;
+  tableName: string;
+  synonymType: SynonymType;
+  ddl?: string;
+  dbLink?: string;
+  created?: number;
+  lastDdlTime?: number;
+  owner?: string;
+  status?: string;
+}
+
+export enum SynonymType {
+  PUBLIC = 'PUBLIC',
+  COMMON = 'COMMON',
+}
+
+// 结果集，历史记录追加
+export enum SqlType {
+  create = 'CREATE',
+  drop = 'DROP',
+  alter = 'ALTER',
+  show = 'SHOW',
+  select = 'SELECT',
+  insert = 'INSERT',
+  update = 'UPDATE',
+  delete = 'DELETE',
+  sort = 'SORT',
+  replace = 'REPLACE',
+}
+
+export enum DbObjectType {
+  database = 'DATABASE',
+  table = 'TABLE',
+  view = 'VIEW',
+  procedure = 'PROCEDURE',
+  function = 'FUNCTION',
+  sequence = 'SEQUENCE',
+  package = 'PACKAGE',
+  package_body = 'PACKAGE_BODY',
+  trigger = 'TRIGGER',
+  synonym = 'SYNONYM',
+  public_synonym = 'PUBLIC_SYNONYM',
+  type = 'TYPE',
+  table_group = 'TABLE_GROUP',
+  file = 'FILE',
+  column = 'COLUMN',
+  external_table = 'EXTERNAL_TABLE',
+  logical_table = 'LOGICAL_TABLE',
+  materialized_view = 'MATERIALIZED_VIEW',
+}
+
+export interface IResultTimerStage {
+  stageName: string;
+  startTimeMillis: number;
+  totalDurationMicroseconds: number;
+  subStages: IResultTimerStage[];
+}
+
+export interface ISqlExecuteResult {
+  results?: any[];
+  allowExport: boolean;
+  columnLabels: string[];
+  columns?: string[];
+  errorCode: number;
+  executeSql: string;
+  existSensitiveData: boolean;
+  existWarnings: boolean;
+  originSql: string;
+  resultSetMetaData: {
+    columnList: any[];
+    dbColumnList: any[];
+    editable: boolean;
+    fieldMetaDataList: IColumnMetaData[];
+    table: any;
+  };
+  dbmsOutput?: string;
+  messages?: string;
+  rows?: string[][];
+  status: ISqlExecuteResultStatus;
+  total?: number;
+  // 是否含有告警信息
+  statementWarnings: string;
+  track?: string;
+  typeNames?: {
+    [key: string]: string;
+  };
+
+  id?: string;
+  requestId?: string | number;
+  sqlId?: string;
+  types?: {
+    [key: string]: string | number;
+  };
+  sqlType: SqlType;
+  dbObjectType?: DbObjectType;
+  dbObjectName?: string;
+  connectionReset: boolean;
+  /**
+   * 透传，脱敏后端依赖
+   */
+  whereColumns?: string[];
+  timer: {
+    name: string;
+    stages: IResultTimerStage[];
+    startTimeMillis: number; // 开始时间
+    totalDurationMicroseconds: number; // 总耗时
+  };
+  traceId?: string;
+  generalSqlType?: GeneralSQLType;
+  checkViolations: {
+    col: number;
+    localizedMessage: string;
+    row: number;
+    text: string;
+    type: string;
+  }[];
+  withFullLinkTrace: boolean;
+  withQueryProfile: boolean;
+  traceEmptyReason?: string;
+}
+export interface ISqlExecuteResultTimer {
+  name: string;
+  stages: IResultTimerStage[];
+  startTimeMillis: number; // 开始时间
+  totalDurationMicroseconds: number; // 总耗时
+}
+
+export interface IExecutingInfo {
+  finished?: boolean;
+  traceId?: string;
+  executingSQL: string;
+  executingSQLId?: string;
+  results?: ISqlExecuteResult[];
+  task: ISQLExecuteTask;
+}
+
+export enum ISqlExecuteResultStatus {
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  CANCELED = 'CANCELED',
+  CREATED = 'CREATED',
+  RUNNING = 'RUNNING',
+}
+
+export enum IProfileNodeStatus {
+  FINISHED = 'FINISHED',
+  RUNNING = 'RUNNING',
+  PREPARING = 'PREPARING',
+}
+
+export enum IProfileStatus {
+  FINISHED = 'FINISHED',
+  RUNNING = 'RUNNING',
+}
+
+export interface ISqlExecuteResultWidthData {
+  data: ISqlExecuteResult[];
+  errMsg: string;
+  errCode?: string;
+}
+
+export enum FileType {
+  csv = 'csv',
+  sql = 'sql',
+}
+
+export enum GeneralSQLType {
+  'DDL' = 'DDL',
+  'DML' = 'DML',
+  'DQL' = 'DQL',
+  'OTHER' = 'OTHER',
+}
+
+export interface IExportResultSet {
+  fileName: string;
+  fileFormat: IExportResultSetFileType;
+  fileEncoding: IMPORT_ENCODING;
+  tableName: string;
+  csvFormat: IExportResultSetCSVFormat;
+}
+
+export interface IRecycleObject {
+  id: string;
+  uniqueId: string;
+  createTime: number;
+  newName: string;
+  objName: string;
+  objType: string;
+  originName: string;
+  schema: string;
+  initialNewName: string;
+}
+
+// 数据库会话
+
+export interface IDatabaseSession {
+  command: string;
+  database: string;
+  dbUser: string;
+  executeTime: number;
+  obproxyIp: string;
+  sessionId: number;
+  sql: string;
+  srcIp: string;
+  svrIp: string;
+  status: string;
+}
+
+export interface ISQLExplainTreeNode {
+  id: number;
+  operator: string;
+  name: string;
+  rowCount: number;
+  cost: number;
+  outputFilter: string;
+  children?: ISQLExplainTreeNode[];
+}
+
+export interface ISQLExplain {
+  tree: ISQLExplainTreeNode[];
+  outline: string;
+  originalText: string;
+  showFormatInfo?: boolean;
+  graph?: IProfileGraph;
+  warning?: string;
+  expTree?: string;
+}
+
+export interface IProfileGraph {
+  duration: number;
+  overview: {
+    [overviewType: string]: string | number;
+  };
+  planId: string;
+  statistics: {
+    [statisticType: string]: string | number;
+  };
+  topNodes: {
+    duration: string[];
+  };
+  traceId: string;
+  vertexes: IProfileVertexes[];
+}
+
+export interface IProfileVertexes {
+  attributes: {
+    [attributeType: string]: string | number;
+  };
+  duration: number;
+  graphId: number;
+  inEdges: IInEdges[];
+  name: string;
+  outEdges: IInEdges[];
+  overview: {
+    [overviewType: string]: string | number;
+  };
+  statistics: {
+    [logType: string]: string | number;
+  };
+  status: string;
+  subNodes?: IProfileVertexes;
+  title: string;
+}
+
+export interface IInEdges {
+  from: string;
+  to: string;
+  weight: string;
+}
+
+export interface ISQLExecuteDetail {
+  affectedRows?: number;
+  execTime: number;
+  hitPlanCache: true;
+  physicalRead: number;
+  planType: string;
+  queueTime: number;
+  reqTime: number;
+  returnRows: number;
+  rpcCount: number;
+  sql: string;
+  sqlId: string;
+  ssstoreRead: number;
+  totalTime: number;
+  traceId: string;
+  waitTime: number;
+}
+
+export enum TraceSpanNode {
+  JDBC = 'JDBC',
+  OBProxy = 'OBProxy',
+  OBServer = 'OBServer',
+}
+export interface TraceSpan {
+  logs: string;
+  tags: any[];
+  elapseMicroSeconds: number;
+  parent: string;
+  traceId: string;
+  startTimestamp: string;
+  endTimestamp: string;
+  spanName: string;
+  tenantId: number;
+  host: string;
+  port: number;
+  logTraceId: string;
+  node: TraceSpanNode;
+  subSpans: TraceSpan[];
+}
+
+export enum ConstraintType {
+  PRIMARY = 'PRIMARY',
+  UNIQUE = 'UNIQUE',
+  FOREIGN = 'FOREIGN',
+  CHECK = 'CHECK',
+  INVALID = 'INVALID',
+}
+
+export enum ConstraintDelayConfig {
+  DEFERRABLE_INITIALLY_IMMEDIATE = 'DEFERRABLE INITIALLY IMMEDIATE',
+  DEFERRABLE_INITIALLY_DEFERRED = 'DEFERRABLE INITIALLY DEFERRED',
+  NOT_DEFERRABLE = 'NOT DEFERRABLE',
+}
+
+export enum ConstraintAction {
+  CASCADE = 'CASCADE',
+  NO_ACTION = 'NO ACTION',
+  RESTRICT = 'RESTRICT',
+  SET_NULL = 'SET NULL',
+}
+
+export interface ITableConstraint extends IEditable {
+  // 基类属性
+  columns?: string[];
+  name: string;
+  tableName?: string;
+  type: ConstraintType;
+  enable?: boolean;
+  delayConfig?: ConstraintDelayConfig;
+  refDatabase?: string;
+  refTable?: string;
+  refColumns?: string[];
+  deleteAction?: ConstraintAction;
+  updateAction?: ConstraintAction; // 检查约束
+
+  condition?: string;
+}
+
+export enum DataTransferTaskLogType {
+  ALL = 'ALL',
+  WARN = 'WARN',
+}
+
+export enum CommonTaskLogType {
+  ALL = 'ALL',
+  WARN = 'WARN',
+}
+
+export interface IExportObj {
+  tableName: string;
+  partitioned: boolean;
+  type: DatabaseObjectType.TABLE | DatabaseObjectType.VIEW;
+}
+
+/** 导出对象状态 */
+export enum ITransferDataObjStatus {
+  INITIAL = 'INITIAL',
+  SUCCESS = 'SUCCESS',
+  FAILURE = 'FAILURE',
+  KILLED = 'KILLED',
+  UNKNOWN = 'UNKNOWN',
+}
+
+/** 数据导入导出状态对象 */
+export interface ITransferObjectInfo {
+  status: ITransferDataObjStatus;
+  name: string;
+  schema: string;
+  count: number;
+  total: number;
+  type: DbObjectType;
+}
+
+export interface ITransferSchemaInfo {
+  count: number;
+  name: string;
+  schema: string;
+  status: ITransferDataObjStatus;
+  total: number;
+  type: DbObjectType;
+}
+
+export interface IDataTransferTaskParams {
+  log: string;
+  status: TaskStatus;
+  format: IMPORT_TYPE;
+  userId: number;
+  taskId: number;
+  sessionName: string;
+  taskType: 'IMPORT' | 'EXPORT';
+  taskName: string;
+  expanded: boolean; // 是否展开
+  maskingPolicy: IMaskPolicy;
+  logs: {
+    [logType: string]: string;
+  };
+
+  // 4 类日志
+
+  timers: {
+    // 4 类日志的轮询定时器
+    [logType: string]: number;
+  };
+
+  activeLogType: DataTransferTaskLogType;
+  createTime?: number;
+  taskConfig?: IDataTransferTaskConfig;
+}
+
+export enum DatabaseObjectType {
+  INVALIDE = 'INVALIDE',
+  TABLE = 'TABLE',
+  INDEX = 'INDEX',
+  VIEW = 'VIEW',
+  DATABASE = 'DATABASE',
+}
+
+export enum TransferType {
+  IMPORT = 'IMPORT',
+  EXPORT = 'EXPORT',
+}
+
+export enum TaskPageScope {
+  CREATED_BY_CURRENT_USER = 'createdByCurrentUser',
+  APPROVE_BY_CURRENT_USER = 'approveByCurrentUser',
+}
+
+export enum TaskPageType {
+  ALL = 'ALL',
+  IMPORT = 'IMPORT',
+  EXPORT = 'EXPORT',
+  DATAMOCK = 'MOCKDATA',
+  ASYNC = 'ASYNC',
+  PARTITION_PLAN = 'PARTITION_PLAN',
+  SQL_PLAN = 'SQL_PLAN',
+  DATASAVE = 'DATASAVE',
+  SHADOW = 'SHADOWTABLE_SYNC',
+  CREATED_BY_CURRENT_USER = 'createdByCurrentUser',
+  APPROVE_BY_CURRENT_USER = 'approveByCurrentUser',
+  ALTER_SCHEDULE = 'ALTER_SCHEDULE',
+  SENSITIVE_COLUMN = 'SENSITIVE_COLUMN',
+  DATA_ARCHIVE = 'DATA_ARCHIVE',
+  ONLINE_SCHEMA_CHANGE = 'ONLINE_SCHEMA_CHANGE',
+  DATA_DELETE = 'DATA_DELETE',
+  EXPORT_RESULT_SET = 'EXPORT_RESULT_SET',
+  APPLY_PROJECT_PERMISSION = 'APPLY_PROJECT_PERMISSION',
+  APPLY_DATABASE_PERMISSION = 'APPLY_DATABASE_PERMISSION',
+  APPLY_TABLE_PERMISSION = 'APPLY_TABLE_PERMISSION',
+  STRUCTURE_COMPARISON = 'STRUCTURE_COMPARISON',
+  MULTIPLE_ASYNC = 'MULTIPLE_ASYNC',
+  LOGICAL_DATABASE_CHANGE = 'LOGICAL_DATABASE_CHANGE',
+}
+
+export enum TaskType {
+  /** 导入 */
+  IMPORT = 'IMPORT',
+  /** 导出 */
+  EXPORT = 'EXPORT',
+  /** 模拟数据 */
+  DATAMOCK = 'MOCKDATA',
+  /** 数据库变更 */
+  ASYNC = 'ASYNC',
+  /** 分区计划 */
+  PARTITION_PLAN = 'PARTITION_PLAN',
+  /** sql 计划 */
+  SQL_PLAN = 'SQL_PLAN',
+  /** 计划变更(调度任务) */
+  ALTER_SCHEDULE = 'ALTER_SCHEDULE',
+  /** 影子表同步 */
+  SHADOW = 'SHADOWTABLE_SYNC',
+  /** ? (疑似弃用) */
+  DATA_SAVE = 'DATA_SAVE',
+  /** 权限申请 (疑似弃用) */
+  PERMISSION_APPLY = 'PERMISSION_APPLY',
+  /** 数据归档 */
+  DATA_ARCHIVE = 'DATA_ARCHIVE',
+  /**  (疑似弃用?) */
+  MIGRATION = 'DATA_ARCHIVE',
+  /** 无锁结构变更 */
+  ONLINE_SCHEMA_CHANGE = 'ONLINE_SCHEMA_CHANGE',
+  /** 数据清理 */
+  DATA_DELETE = 'DATA_DELETE',
+  /** 导出结果集 */
+  EXPORT_RESULT_SET = 'EXPORT_RESULT_SET',
+  /** 申请项目权限 */
+  APPLY_PROJECT_PERMISSION = 'APPLY_PROJECT_PERMISSION',
+  /** 申请库权限 */
+  APPLY_DATABASE_PERMISSION = 'APPLY_DATABASE_PERMISSION',
+  /** 申请表/视图权限 */
+  APPLY_TABLE_PERMISSION = 'APPLY_TABLE_PERMISSION',
+  /** 结构对比 */
+  STRUCTURE_COMPARISON = 'STRUCTURE_COMPARISON',
+  /** 多库变更 */
+  MULTIPLE_ASYNC = 'MULTIPLE_ASYNC',
+  /** 逻辑库变更 */
+  LOGICAL_DATABASE_CHANGE = 'LOGICAL_DATABASE_CHANGE',
+}
+
+export enum TaskJobType {
+  DATA_DELETE = 'DATA_DELETE',
+}
+
+export enum SubTaskType {
+  DATA_ARCHIVE = 'DATA_ARCHIVE',
+  DATA_DELETE = 'DATA_DELETE',
+  DATA_ARCHIVE_ROLLBACK = 'DATA_ARCHIVE_ROLLBACK',
+  DATA_ARCHIVE_DELETE = 'DATA_ARCHIVE_DELETE',
+  ASYNC = 'ASYNC',
+}
+
+export enum TaskSubType {
+  INSERT = 'INSERT',
+  UPDATE = 'UPDATE',
+  SELECT = 'SELECT',
+  DELETE = 'DELETE',
+  CREATE = 'CREATE',
+  DROP = 'DROP',
+  ALTER = 'ALTER',
+  OTHER = 'OTHER',
+}
+
+export enum EnvPageType {
+  DEV = 'DEV',
+  TEST = 'TEST',
+  PROD = 'PROD',
+}
+
+export enum RiskDetectRuleType {
+  DEFAULT = 'DEFAULT',
+  LOW = 'LOW',
+  MIDDLE = 'MIDDLE',
+  HIGH = 'HIGH',
+}
+
+export enum EnvType {
+  DEV = 'DEV',
+  TEST = 'TEST',
+  PROD = 'PROD',
+}
+export interface IExportDbObject {
+  dbObjectType: DbObjectType;
+  objectName: string;
+}
+
+export enum ExportFormat {
+  SQL = 'SQL',
+  ODC = 'ODC',
+  TEXT = 'TEXT',
+}
+
+export interface IDataTransferTaskConfig {
+  format: ExportFormat;
+  blankToNull: boolean;
+  characFormat: string;
+  exportFileMaxSize: string;
+  columnSeparator: string;
+  dropTable: boolean;
+  encoding: string;
+  columnDelimiter: string;
+  exportDbObjects: IExportDbObject[];
+  globalSnapshot: boolean;
+  hasColumnTitle: boolean;
+  importFileName: string;
+  lineSeparator: string;
+  onlyTransferDdl: boolean;
+  rowsPerCommit: number;
+  skippedDataType: string[];
+  transferType: TransferType;
+  truncateTable: boolean;
+  userId: number;
+}
+
+export interface ISequence {
+  cacheSize: number;
+  nextCacheValue: string;
+  cached: boolean;
+  cycled: boolean;
+  increament: number;
+  maxValue: number;
+  minValue: number;
+  name: string;
+  orderd: boolean;
+  startValue: number;
+  user: string;
+  ddl: string;
+}
+
+export enum EXPORT_TYPE {
+  CSV = 'CSV',
+  SQL = 'SQL',
+}
+
+export enum EXPORT_CONTENT {
+  DATA_AND_STRUCT,
+  DATA,
+  STRUCT,
+}
+
+export interface ExportFormData {
+  projectId?: number;
+  databaseName?: string;
+  databaseId: number;
+  executionStrategy: TaskExecStrategy;
+  executionTime?: number | Dayjs;
+  taskName: string;
+  dataTransferFormat: EXPORT_TYPE;
+  exportContent: EXPORT_CONTENT;
+  batchCommit: boolean; // 是否批量提交
+  encoding?: IMPORT_ENCODING;
+  maskStrategy: string;
+  useSys: boolean;
+  description?: string;
+
+  batchCommitNum: number;
+  skippedDataType: string[];
+  globalSnapshot: boolean; // 全局快照
+
+  mergeSchemaFiles: boolean; // 合并为一个SQL文件
+  withDropDDL: boolean; // Create 语句前添加 Drop 语句
+  exportDbObjects: IExportDbObject[]; // 选择的表对象
+  withColumnTitle: boolean;
+  blankToNull: boolean; // 空串转空值
+
+  columnSeparator: string; // 字段分割符号
+
+  exportFileMaxSize: string | number; // 单个文件上限(MB)
+  columnDelimiter: string; // 文本识别符
+
+  lineSeparator: string; // 换行符号
+  sysUser?: string;
+  sysUserPassword?: string;
+  overwriteSysConfig?: boolean;
+  exportAllObjects?: boolean; // 导出整库
+  exportFilePath?: string; // 桌面端导出路径
+  taskId?: number;
+
+  transferDDL?: boolean;
+  transferData?: boolean;
+  csvConfig?: ICSVConfig;
+}
+
+export interface ICSVConfig {
+  skipHeader: boolean;
+  blankToNull: boolean;
+  columnSeparator: string;
+  columnDelimiter: string;
+  lineSeparator: string;
+  fileName: string;
+  encoding: IMPORT_ENCODING;
+}
+
+export enum IMPORT_TYPE {
+  ZIP = 'ZIP',
+  SQL = 'SQL',
+  CSV = 'CSV',
+  DIR = 'DIR',
+}
+
+/**
+ * 数据类型
+ */
+export enum FILE_DATA_TYPE {
+  SQL = 'SQL',
+  CSV = 'CSV',
+}
+
+export interface CsvColumnMapping {
+  destColumnName: string;
+  destColumnType: string;
+  destColumnPosition: number;
+  firstLineValue: string;
+  srcColumnName: string;
+  srcColumnPosition: number;
+  isSelected?: boolean;
+}
+
+export enum IMPORT_ENCODING {
+  UTF8 = 'UTF_8',
+  UTF16 = 'UTF_16',
+  UTF32 = 'UTF_32',
+  ISO = 'ISO_8859_1',
+  ASCII = 'ASCII',
+  GB2312 = 'GB2312',
+  GBK = 'GBK',
+  GB18030 = 'GB18030',
+  BIG5 = 'BIG5',
+}
+
+export enum IMPORT_CONTENT {
+  DATA_AND_STRUCT,
+  DATA,
+  STRUCT,
+}
+
+export interface ImportFormData {
+  tableName?: string;
+  databaseId: number;
+  projectId?: number;
+  databaseName?: string;
+  executionStrategy: TaskExecStrategy;
+  executionTime?: number | Dayjs;
+  dataTransferFormat: FILE_DATA_TYPE; // 导入格式
+  fileType: IMPORT_TYPE;
+  useSys: boolean;
+  sysUser?: string;
+  sysUserPassword?: string;
+  overwriteSysConfig?: boolean;
+  stopWhenError: boolean;
+  description?: string;
+
+  encoding: IMPORT_ENCODING; // 文件编码
+
+  importFileName: {
+    response: {
+      data: {
+        acceptMore: boolean;
+        external: boolean;
+        fileName: string;
+        format: FILE_DATA_TYPE;
+        importObjects: Record<string, string[]>;
+      };
+    };
+
+    error?: any;
+    uid: string;
+    name: string;
+    status: string;
+    originFileObj: File;
+  }[];
+
+  // 导入文件名
+
+  importContent: IMPORT_CONTENT; // 导入内容类型
+
+  batchCommitNum: number; // 批量提交数量
+
+  replaceSchemaWhenExists: boolean;
+  truncateTableBeforeImport: boolean; // 导入前清空数据
+
+  skippedDataType: string[];
+  skipHeader: boolean;
+  blankToNull: boolean; // 空串转空值
+
+  columnSeparator: string; // 字段分割符号
+
+  columnDelimiter: string; // 文本识别符
+
+  lineSeparator: string; // 换行符号
+  taskId?: number;
+  transferDDL?: boolean;
+  transferData?: boolean;
+  csvConfig?: ICSVConfig;
+  exportDbObjects?: { dbObjectType: string; objectName: string }[];
+}
+
+// 左侧结构树菜单所支持的key列表
+export enum ResourceTreeNodeMenuKeys {
+  // table & view & common
+  BROWSER_SCHEMA = 'BROWSER_SCHEMA',
+  BROWSER_DATA = 'BROWSER_DATA',
+  CREATE_TABLE = 'CREATE_TABLE',
+  CREATE_VIEW = 'CREATE_VIEW',
+  CREATE_FUNCTION = 'CREATE_FUNCTION',
+  CREATE_PROCEDURE = 'CREATE_PROCEDURE',
+  OPEN_SQL_WINDOW = 'OPEN_SQL_WINDOW',
+  COPY = 'COPY',
+  OPEN_TABLE_SQLWINDOW = 'OPEN_TABLE_SQLWINDOW',
+  COPY_NAME = 'COPY_NAME',
+  COPY_SELECT = 'COPY_SELECT',
+  COPY_INSERT = 'COPY_INSERT',
+  COPY_UPDATE = 'COPY_UPDATE',
+  COPY_DELETE = 'COPY_DELETE',
+  BROWSER_DDL = 'BROWSER_DDL',
+  DELETE_TABLE = 'DELETE_TABLE',
+  RENAME_TABLE = 'RENAME_TABLE',
+  REFRESH_TABLE = 'REFRESH_TABLE',
+  EXPORT_TABLE = 'EXPORT_TABLE',
+  IMPORT_TABLE = 'IMPORT_TABLE',
+  MOCK_DATA = 'MOCK_DATA',
+  DOWNLOAD = 'DOWNLOAD',
+  // columnSet
+  BROWSER_COLUMNS = 'BROWSER_COLUMNS',
+  CREATE_COLUMN = 'CREATE_COLUMN',
+  REFRESH_COLUMNS = 'REFRESH_COLUMNS',
+  // column
+  EDIT_COLUMN = 'EDIT_COLUMN',
+  DELETE_COLUMN = 'DELETE_COLUMN',
+  RENAME_COLUMN = 'RENAME_COLUMN',
+  // indexSet
+  BROWSER_INDEXES = 'BROWSER_INDEXES',
+  CREATE_INDEX = 'CREATE_INDEX',
+  REFRESH_INDEXES = 'REFRESH_INDEXES',
+  // index
+  EDIT_INDEX = 'EDIT_INDEX',
+  DELETE_INDEX = 'DELETE_INDEX',
+  RENAME_INDEX = 'RENAME_INDEX',
+  // partitionSet
+  BROWSER_PARTITIONS = 'BROWSER_PARTITIONS',
+  CREATE_PARTITION = 'CREATE_PARTITION',
+  REFRESH_PARTITIONS = 'REFRESH_PARTITIONS',
+  // partition
+  EDIT_PARTITION = 'EDIT_PARTITION',
+  DELETE_PARTITION = 'DELETE_PARTITION',
+  RENAME_PARTITION = 'RENAME_PARTITION',
+  SPLIT_PARTITION = 'SPLIT_PARTITION',
+  // constraintsSet
+  BROWSER_CONSTRAINTS = 'BROWSER_CONSTRAINTS',
+  CREATE_CONSTRAINT = 'CREATE_CONSTRAINT',
+  REFRESH_CONSTRAINTS = 'REFRESH_CONSTRAINTS',
+  // constraints
+  EDIT_CONSTRAINT = 'EDIT_CONSTRAINT',
+  DELETE_CONSTRAINT = 'DELETE_CONSTRAINT',
+  RENAME_CONSTRAINT = 'RENAME_CONSTRAINT',
+  REFRESH_CONSTRAINTES = 'REFRESH_CONSTRAINTES',
+  // sequence
+  CREATE_SEQUENCE = 'CREATE_SEQUENCE',
+  UPDATE_SEQUENCE = 'UPDATE_SEQUENCE',
+  DELETE_SEQUENCE = 'DELETE_SEQUENCE',
+  REFRESH_SEQUENCE = 'REFRESH_SEQUENCE',
+  // synonym
+  CREATE_SYNONYM = 'CREATE_SYNONYM',
+  DELETE_SYNONYM = 'DELETE_SYNONYM',
+  REFRESH_SYNONYM = 'REFRESH_SYNONYM',
+  // EXTERNAL_TABLE
+  EXTERNAL_TABLE_SYNCHRONIZATION_TABLE = 'EXTERNAL_TABLE_SYNCHRONIZATION_TABLE',
+  //
+  CREATE_MATERIALIZED_VIEW = 'CREATE_MATERIALIZED_VIEW',
+}
+
+export interface TaskRecord<P> {
+  affectedRows: number;
+  projectId: number;
+  id: number;
+  type: TaskType;
+  subTypes: string[];
+  database: IDatabase;
+  relatedDatabase?: IDatabase;
+  creator: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  };
+  candidateApprovers: {
+    id: number;
+    name: string;
+    accountName: string;
+  }[];
+  approvable: boolean;
+  approveInstanceId?: number;
+  rollbackable: boolean;
+  createTime: number;
+  completeTime: number;
+  status: TaskStatus;
+  riskLevel?: IRiskLevel;
+  parameters?: P;
+  executionStrategy?: TaskExecStrategy;
+  executionTime?: number;
+  description?: string;
+  nodeList?: ITaskFlowNode[];
+  progressPercentage: number;
+  project: IProject;
+}
+
+export interface ICycleSubTaskRecord {
+  createTime: number;
+  id: number;
+  jobGroup: TaskPageType.DATA_ARCHIVE | TaskPageType.SQL_PLAN;
+  jobName: string;
+  resultJson: string;
+  status: TaskStatus;
+  updateTime: number;
+}
+
+export interface ISubTaskRecord {
+  createTime: number;
+  fireTime: number;
+  id: number;
+  jobGroup: 'ONLINE_SCHEMA_CHANGE_START';
+  jobName: string;
+  resultJson: string;
+  status: TaskStatus;
+  updateTime: number;
+  parametersJson: Record<string, any>;
+  progressPercentage: number;
+}
+
+export interface ISubTaskRecords {
+  tasks: ISubTaskRecord[];
+}
+
+export interface IDatasourceUser {
+  name: string;
+}
+
+export type TaskRecordParameters =
+  | IDataTransferTaskParams
+  | IAsyncTaskParams
+  | IMockDataParams
+  | IPermissionTaskParams
+  | IPartitionPlanParams
+  | ISQLPlanTaskParams
+  | IAlterScheduleTaskParams
+  | IResultSetExportTaskParams
+  | IApplyPermissionTaskParams
+  | IApplyDatabasePermissionTaskParams
+  | IMultipleAsyncTaskParams
+  | ILogicalDatabaseAsyncTaskParams;
+
+export interface ITaskResult {
+  affectedRows?: number;
+  autoModifyTimeout?: boolean;
+  containQuery: boolean;
+  errorRecordsFilePath: string;
+  failCount: number;
+  jsonFileName: string;
+  records: string[];
+  successCount: number;
+  zipFileDownloadUrl: string;
+  fullLogDownloadUrl: string;
+  writeCount: number;
+  conflictCount: number;
+  ignoreCount: number;
+  clearCount: number;
+  exportZipFilePath?: string;
+  rollbackPlanResult?: {
+    error: string;
+    generated: boolean;
+    resultFileDownloadUrl: string;
+    success: boolean;
+  };
+}
+
+export interface Operation {
+  createTime: number;
+  flowInstanceId: number;
+  id: number;
+  newParameter: string;
+  previousParameters: string;
+  scheduleId: number;
+  status: ScheduleChangeStatus;
+  type: TaskOperationType;
+  updateTime: number;
+}
+
+export enum ScheduleChangeStatus {
+  PREPARING = 'PREPARING',
+  APPROVING = 'APPROVING',
+  CHANGING = 'CHANGING',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+}
+
+export enum MigrationInsertAction {
+  INSERT_IGNORE = 'INSERT_IGNORE',
+  INSERT_DUPLICATE_UPDATE = 'INSERT_DUPLICATE_UPDATE',
+}
+
+export enum ShardingStrategy {
+  FIXED_LENGTH = 'FIXED_LENGTH',
+  MATCH = 'MATCH',
+}
+
+export enum SyncTableStructureEnum {
+  COLUMN = 'COLUMN',
+  CONSTRAINT = 'CONSTRAINT',
+  INDEX = 'INDEX',
+  PARTITION = 'PARTITION',
+}
+
+export interface IDLMJobParametersTables {
+  conditionExpression: string;
+  tableName: string;
+  partitions?: [] | string;
+  targetTableName?: string;
+  joinTableConfigs?: IJoinTableConfigs[];
+}
+
+export interface IDataArchiveJobParameters {
+  deleteAfterMigration: boolean;
+  deleteTemporaryTable?: boolean;
+  name: string;
+  sourceDatabaseId: number;
+  sourceDatabase?: IDatabase;
+  targetDataBaseId: number;
+  targetDatabase: IDatabase;
+  migrationInsertAction?: MigrationInsertAction;
+  shardingStrategy?: ShardingStrategy;
+  deleteByUniqueKey?: boolean;
+  rateLimit?: {
+    rowLimit?: number;
+    dataSizeLimit?: number;
+  };
+  tables: IDLMJobParametersTables[];
+  variables: {
+    name: string;
+    pattern: string;
+  }[];
+  timeoutMillis: number;
+  syncTableStructure: SyncTableStructureEnum[];
+  dirtyRowAction: DirtyRowActionEnum;
+  maxAllowedDirtyRowCount: number;
+  fullDatabase: boolean;
+}
+
+export interface IDataClearJobParameters {
+  deleteAfterMigration: boolean;
+  name: string;
+  databaseId: number;
+  database?: IDatabase;
+  deleteByUniqueKey?: boolean;
+  rateLimit?: {
+    rowLimit?: number;
+    dataSizeLimit?: number;
+  };
+  tables: IDLMJobParametersTables[];
+  variables: {
+    name: string;
+    pattern: string;
+  }[];
+  timeoutMillis: number;
+  needCheckBeforeDelete: boolean;
+  targetDatabaseId?: number;
+  targetDatabase?: IDatabase;
+  shardingStrategy?: ShardingStrategy;
+  dirtyRowAction: DirtyRowActionEnum;
+  maxAllowedDirtyRowCount: number;
+  fullDatabase: boolean;
+}
+
+export interface ISqlPlayJobParameters {
+  delimiter: string;
+  errorStrategy: string;
+  queryLimit: number;
+  timeoutMillis: number;
+  sqlContent?: string;
+  sqlObjectIds?: string[];
+  sqlObjectNames?: string[];
+}
+
+export interface ICycleTaskRecord<T> {
+  project: IProject;
+  id: number;
+  type: TaskType;
+  projectId?: number;
+  creator: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  };
+
+  createTime: number;
+  jobs?: unknown;
+  approveInstanceId?: number;
+  nextFireTimes: number[];
+  status: TaskStatus;
+  allowConcurrent: boolean;
+  jobParameters: T;
+  nodeList?: ITaskFlowNode[];
+  triggerConfig?: ICycleTaskTriggerConfig;
+  database: IDatabase;
+  riskLevel?: IRiskLevel;
+  description?: string;
+}
+
+export interface ICycleTaskStatParam {
+  currentOrganizationId: number;
+  types: string[];
+  startTime?: number;
+  endTime?: number;
+}
+
+export interface IDatabaseHistoriesParam {
+  currentOrganizationId: number;
+  limit;
+  startTime?: number;
+  endTime?: number;
+}
+
+export interface ICycleTaskStatRecord {
+  type: string;
+  successEnabledCount: number;
+  totalCount?: number;
+  taskStats: {
+    type: string;
+    successExecutionCount: number;
+    failedExecutionCount: number;
+    waitingExecutionCount: number;
+    executingCount: number;
+    otherCount: number;
+  }[];
+}
+
+export interface ICycleSubTaskDetailRecord {
+  createTime: number;
+  id: number;
+  jobGroup: TaskType.DATA_ARCHIVE | TaskType.SQL_PLAN;
+  jobName: string;
+  resultJson: string;
+  status: SubTaskStatus;
+  updateTime: number;
+  executionDetails: string;
+}
+
+export interface ICycleTaskJobRecord<T> {
+  createTime: number;
+  executionDetails: T;
+  fireTime: number;
+  id: number;
+  parameters: any;
+  status: SubTaskStatus;
+  type: TaskType.LOGICAL_DATABASE_CHANGE;
+  updateTime: number;
+}
+
+export enum SubTaskType {
+  MIGRATE = 'MIGRATE',
+  CHECK = 'CHECK',
+  DELETE = 'DELETE',
+  QUICK_DELETE = 'QUICK_DELETE',
+  DEIRECT_DELETE = 'DEIRECT_DELETE',
+  ROLLBACK = 'ROLLBACK',
+}
+
+export interface ISubTaskTaskUnit {
+  endTime: number;
+  processedRowCount: number;
+  processedRowsPerSecond: number;
+  readRowCount: number;
+  readRowsPerSecond: number;
+  startTime: number;
+  status: TaskStatus;
+  tableName: string;
+  type: TaskType;
+  userCondition: string;
+}
+
+export interface IDataArchiveTaskRecord {
+  approvable: boolean;
+  candidateApprovers: any;
+  completeTime: number;
+  connection: {
+    id: number;
+    name: string;
+    dbMode: ConnectionMode;
+  };
+  createTime: number;
+  creator: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  };
+  databaseName: string;
+  description: string;
+  executionStrategy: TaskExecStrategy;
+  executionTime: number;
+  id: number;
+  riskLevel: IRiskLevel;
+  nodeList: ITaskFlowNode[];
+  parameters: {
+    progressPercentage: number;
+    projectId: number;
+    rollbackable: boolean;
+    status: TaskStatus;
+    subTypes?: unknown;
+    type: TaskType;
+    triggerConfig: ICycleTaskTriggerConfig;
+    scheduleTaskParameters: {
+      deleteAfterMigration: boolean;
+      name: string;
+      sourceDatabaseId: number;
+      targetDataBaseId: number;
+      tables: IDLMJobParametersTables[];
+      variables: {
+        name: string;
+        pattern: string;
+      }[];
+    };
+  };
+}
+export interface IJoinTableConfigs {
+  tableName: string;
+  joinCondition: string;
+}
+
+export interface IAsyncTaskResultSet {
+  columnLabels: string[];
+  columns: string[];
+  connectionReset: boolean;
+  costMillis: number;
+  dbObjectName: null;
+  dbObjectNameList: [];
+  dbObjectType: string;
+  dbmsOutput: string;
+  executeSql: string;
+  existWarnings: boolean;
+  generalSqlType: string;
+  odcProcessCostMillis: number;
+  originSql: string;
+  resultSetMetaData: {
+    columnList: ITableColumn[];
+    editable: false;
+    fieldMetaDataList: IColumnMetaData[];
+    table: unknown;
+  };
+
+  rows: string[][];
+  sqlId: string;
+  sqlType: string;
+  status: string;
+  total: number;
+  traceId: number;
+  track: unknown;
+  typeNames: Record<string, any>;
+  types: unknown;
+}
+
+export interface ITaskLog {}
+
+export interface CreateTaskRecord {
+  projectId?: number;
+  databaseId: number;
+  taskType: TaskType;
+  parameters: Record<string, any>;
+  executionStrategy: TaskExecStrategy;
+  executionTime?: number | Dayjs;
+  description?: string;
+}
+export interface CreateStructureComparisonTaskRecord {
+  taskType: TaskType;
+  executionStrategy: TaskExecStrategy;
+  description?: string;
+  parameters: {
+    comparisonScope: EComparisonScope;
+    sourceDatabaseId: number;
+    tableNamesToBeCompared?: string[];
+    targetDatabaseId: number;
+  };
+}
+export interface IAsyncTaskParams {
+  timeoutMillis: number;
+  errorStrategy: string;
+  sqlContent: string;
+  sqlObjectIds: string[];
+  sqlObjectNames: string[];
+  delimiter: string;
+  queryLimit: number;
+  rollbackSqlContent: string;
+  rollbackSqlObjectIds: string[];
+  rollbackSqlObjectNames: string[];
+  generateRollbackPlan: boolean;
+  parentFlowInstanceId?: number;
+  retryTimes: number;
+}
+
+export interface ILogicalDatabaseAsyncTaskParams {
+  sqlContent: string;
+  delimiter: string;
+  timeoutMillis: number;
+  databaseId: number;
+}
+
+export interface IApplyPermissionTaskParams {
+  applyReason: string;
+  project: {
+    name: string;
+    id: number;
+  };
+  resourceRoles: {
+    name: string;
+    id: number;
+  }[];
+}
+
+export interface IApplyDatabasePermissionTaskParams {
+  project: {
+    id: number;
+    name?: string;
+  };
+  databases: {
+    id: number;
+    name?: string;
+    type?: DBType;
+    dataSourceId?: number;
+    dataSourceName?: string;
+    dialectType?: ConnectType;
+  }[];
+  types: DatabasePermissionType[];
+  expireTime: number;
+  applyReason: string;
+  validDuration: string;
+}
+
+export interface IApplyTablePermissionTaskParams {
+  project: {
+    id: number;
+    name?: string;
+  };
+  // 提交时databaseId、tableNames为必填项
+  // 详情返回时五个字段均有
+  tables: {
+    databaseId: number;
+    tableName: string;
+    tableId: number;
+    dataSourceId?: number;
+    dataSourceName?: string;
+    databaseName?: string;
+  }[];
+  types: TablePermissionType[];
+  expireTime: number;
+  applyReason: string;
+}
+export interface IMultipleAsyncTaskParams {
+  autoErrorStrategy: boolean;
+  batchId: number;
+  databases: {
+    id?: number;
+    name: string;
+    existed: boolean;
+    databaseId: string;
+    project: IProject;
+    dataSource: IConnection;
+    environment: IEnvironment;
+  }[];
+  delimiter: string;
+  errorStrategy: ErrorStrategy;
+  generateRollbackPlan?: any;
+  manualTimeoutMillis: number;
+  modifyTimeoutIfTimeConsumingSqlExists: boolean;
+  orderedDatabaseIds: number[][];
+  parentJobType: TaskType;
+  project?: {
+    id: number;
+    name: string;
+  };
+  projectId?: number;
+  queryLimit?: number;
+  retryIntervalMillis?: number;
+  retryTimes?: number;
+  riskLevelIndex: number;
+  rollbackSqlContent?: string;
+  rollbackSqlObjectIds?: any[];
+  rollbackSqlObjectNames?: string[];
+  sqlContent?: string;
+  sqlObjectIds: any[];
+  sqlObjectNames?: string;
+  timeoutMillis: number;
+}
+
+export interface IResultSetExportTaskParams {
+  sql: string;
+  fileFormat: IExportResultSetFileType;
+  fileEncoding: IMPORT_ENCODING;
+  tableName: string;
+  saveSql: boolean;
+  csvFormat: {
+    isContainColumnHeader: boolean;
+    isTransferEmptyString: boolean;
+    columnSeparator: string;
+    columnDelimiter: string;
+    lineSeparator: string;
+  };
+  fileName: string;
+  maxRows: string;
+}
+export interface ShadowSyncTaskParams {
+  comparingTaskId: number;
+}
+
+export enum RollbackType {
+  // 引用
+  REF = 'reference',
+  // 自定义
+  CUSTOM = 'CUSTOM',
+}
+
+export interface IPermissionTaskParams {
+  applyInfoList: {
+    actions: string[];
+    resourceId: number;
+    resourceType: string;
+  }[];
+}
+
+export interface IMockDataParams {
+  taskDetail?: string;
+  writeCount?: number;
+  conflictCount?: number;
+  ignoreCount?: number;
+  clearCount?: number;
+  dbMode?: ConnectionMode;
+}
+
+export interface IPartitionPlanParams extends IPartitionPlan {}
+
+export interface ICycleTaskTriggerConfig {
+  cronExpression?: string;
+  days?: number[];
+  hours?: number[];
+  startAt?: number;
+  triggerStrategy?: TaskExecStrategy;
+}
+
+export interface ISQLPlanTaskParams {
+  taskType: TaskType.SQL_PLAN;
+  operationType: TaskOperationType;
+  scheduleTaskParameters: {
+    timeoutMillis: number;
+    errorStrategy: string;
+    sqlContent: string;
+    sqlObjectIds: string[];
+    sqlObjectNames: string[];
+    delimiter: string;
+    queryLimit: number;
+  };
+
+  triggerConfig: ICycleTaskTriggerConfig;
+}
+
+export interface IAlterScheduleTaskParams {
+  taskType: TaskType.ALTER_SCHEDULE;
+  taskId: number;
+  operationType: TaskOperationType;
+  allowConcurrent: boolean;
+  forbiddenWriteType: LockStrategy;
+  scheduleTaskParameters: {
+    timeoutMillis: number;
+    errorStrategy: string;
+    sqlContent: string;
+    sqlObjectIds: string[];
+    sqlObjectNames: string[];
+    delimiter: string;
+    queryLimit: number;
+  };
+
+  triggerConfig: ICycleTaskTriggerConfig;
+  sqlContent?: string;
+  rateLimitConfig?: {
+    rowLimit: number;
+    dataSizeLimit: number;
+  };
+}
+
+export interface IDataArchiveTaskParams {
+  type: TaskType.DATA_ARCHIVE;
+  taskId: number;
+  operationType: TaskOperationType;
+  allowConcurrent: boolean;
+  description: string;
+  misfireStrategy: string;
+  triggerConfig: ICycleTaskTriggerConfig;
+  scheduleTaskParameters: {
+    deleteAfterMigration: boolean;
+    name: string;
+    sourceDatabaseId: number;
+    targetDataBaseId: number;
+    tables: IDLMJobParametersTables[];
+    variables: {
+      name: string;
+      pattern: string;
+    }[];
+  };
+}
+
+export interface IStructureComparisonTaskParams {
+  comparisonScope: EComparisonScope;
+  sourceDatabaseId: number;
+  tableNamesToBeCompared?: string[];
+  targetDatabaseId: number;
+}
+
+export enum TaskExecStrategy {
+  AUTO = 'AUTO',
+  MANUAL = 'MANUAL',
+  TIMER = 'TIMER',
+  START_NOW = 'START_NOW',
+  START_AT = 'START_AT',
+  DAY = 'DAY',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
+  CRON = 'CRON',
+}
+
+export enum TaskFlowNodeType {
+  APPROVAL_TASK = 'APPROVAL_TASK',
+  GATEWAY = 'GATEWAY',
+  SERVICE_TASK = 'SERVICE_TASK',
+  PRE_CHECK = 'PRE_CHECK',
+}
+
+export enum TaskOperationType {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  PAUSE = 'PAUSE',
+  TERMINATE = 'TERMINATE',
+  RESUME = 'RESUME',
+}
+
+export enum IFlowTaskType {
+  PRE_CHECK = 'PRE_CHECK',
+  MULTIPLE_ASYNC = 'MULTIPLE_ASYNC',
+  GENERATE_ROLLBACK = 'GENERATE_ROLLBACK',
+}
+
+export interface ITaskFlowNode {
+  status: TaskNodeStatus;
+  nodeType: TaskFlowNodeType;
+  taskType: IFlowTaskType;
+  externalFlowInstanceUrl: string;
+  completeTime: number;
+  comment: string;
+  deadlineTime: number;
+  issueCount: number;
+  unauthorizedDBResources: IUnauthorizedDBResources[];
+  id?: number;
+  candidates: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  }[];
+
+  createTime: number;
+  operator: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  };
+
+  autoApprove: boolean;
+}
+
+export type TaskDetail<P> = TaskRecord<P>;
+
+export interface IIPartitionPlanTaskDetail<T> extends TaskDetail<T> {
+  nextFireTimes?: number[];
+}
+
+export type CycleTaskDetail<T> = ICycleTaskRecord<T>;
+
+export type DataArchiveTaskDetail = IDataArchiveTaskRecord;
+
+export interface IAsyncTaskParams {
+  sqlContent: string;
+  sqlFileName: string;
+  successCount: number;
+  failCount: number;
+  records: string[];
+  containQuery: boolean;
+  zipFileDownloadUrl: string;
+}
+
+export enum TaskStatus {
+  APPROVING = 'APPROVING', // 审批中
+  REJECTED = 'REJECTED', // 审批不通过
+  APPROVAL_EXPIRED = 'APPROVAL_EXPIRED', // 审批过期
+  WAIT_FOR_EXECUTION = 'WAIT_FOR_EXECUTION', // 待执行
+  WAIT_FOR_EXECUTION_EXPIRED = 'WAIT_FOR_EXECUTION_EXPIRED', // 等待执行过期
+  EXECUTING = 'EXECUTING', // 执行中
+  EXECUTION_SUCCEEDED = 'EXECUTION_SUCCEEDED', // 执行成功
+  EXECUTION_FAILED = 'EXECUTION_FAILED', // 执行失败
+  EXECUTION_EXPIRED = 'EXECUTION_EXPIRED', // 执行过期
+  ROLLBACK_FAILED = 'ROLLBACK_FAILED', // 回滚失败
+  ROLLBACK_SUCCEEDED = 'ROLLBACK_SUCCEEDED', // 已回滚
+  CANCELLED = 'CANCELLED', // 已终止
+  COMPLETED = 'COMPLETED', // 已完成
+  WAIT_FOR_CONFIRM = 'WAIT_FOR_CONFIRM', // 确认分区策略
+  // 其他： 前端不感知
+  CREATED = 'CREATED', // 前端一般不感知，接口调用快的时候，可能会遇到（山露: 建议加上, 和 EXECUTING 一样的处理）
+  APPROVED = 'APPROVED',
+  // 周期任务独有的状态
+  PAUSE = 'PAUSE',
+  ENABLED = 'ENABLED',
+  /** 已终止 */
+  TERMINATED = 'TERMINATED',
+  TIMEOUT = 'TIMEOUT',
+  PRE_CHECK_FAILED = 'PRE_CHECK_FAILED',
+  CREATING = 'CREATING',
+  EXECUTION_ABNORMAL = 'EXECUTION_ABNORMAL', // 执行异常
+}
+
+export enum SubTaskStatus {
+  PREPARING = 'PREPARING', // 已创建
+  RUNNING = 'RUNNING', // 运行中
+  DONE = 'DONE', // 执行完成
+  FAILED = 'FAILED', // 执行失败
+  CANCELED = 'CANCELED', // 执行取消
+  ABNORMAL = 'ABNORMAL', // 执行异常
+}
+
+export enum StatusNodeType {
+  FLOW_TASK = 'FLOW_TASK',
+  CYCLE_TASK = 'CYCLE_TASK',
+  SUB_TASK = 'SUB_TASK',
+}
+
+export enum TaskNodeStatus {
+  CREATED = 'CREATED',
+  EXECUTING = 'EXECUTING',
+  PENDING = 'PENDING',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  EXPIRED = 'EXPIRED',
+  FAILED = 'FAILED',
+  WAIT_FOR_CONFIRM = 'WAIT_FOR_CONFIRM',
+  PRE_CHECK_FAILED = 'PRE_CHECK_FAILED',
+}
+
+export enum SQLContentType {
+  TEXT = 'TEXT',
+  FILE = 'FILE',
+}
+
+/**
+ * 解密tag
+ */
+export enum DECODE_TAG {
+  SDYD = 'SD_MOBILE',
+}
+
+export interface TaskTools<T> {
+  (record: T): {
+    text: string;
+    action?: any;
+    /** 需要确认文案 */
+    confirmText?: string;
+    /** 下载地址 */
+    download?: any;
+    /** 按钮类型 */
+    type?: ButtonType;
+    /** 是否是查看按钮 */
+    isOpenBtn?: boolean;
+    isLoading?: boolean;
+  }[];
+}
+
+/** 树形结构的菜单节点 */
+export interface ITreeNode {
+  title: ((e) => string) | string;
+  key: string;
+  icon?: ReactNode;
+  actions?: string[][];
+  children?: ITreeNode[];
+  type?: string;
+  theme?: string;
+  topTab?: string;
+  propsTab?: string;
+  status?: ReactNode;
+  plStatus?: string;
+  root?: ITreeNode;
+  parent?: ITreeNode;
+  menu?: ITreeNodeMenu;
+  origin?: any;
+  dataRef?: any;
+}
+
+export interface ITreeNodeMenu {
+  type: MenusType;
+  icon?: ReactNode;
+  disabled?: boolean;
+  options?: any;
+}
+
+type TableMenuType =
+  | DbObjectType.table
+  | 'tableColumnSet'
+  | 'tableColumn'
+  | 'tableIndexSet'
+  | 'tableIndex'
+  | 'tablePartitionSet'
+  | 'tablePartition'
+  | 'tableConstraintsSet'
+  | 'tableConstraint';
+
+type ViewMenuType = DbObjectType.view;
+
+type SequenceMenuType = 'sequence';
+
+type SynonymMenuType = 'synonym';
+
+export type MenusType = TableMenuType | ViewMenuType | SequenceMenuType | SynonymMenuType;
+
+export enum TableTreeNode {
+  TABLE = 'TABLE',
+  COLUMN = 'COLUMN',
+  INDEX = 'INDEX',
+  PARTITION = 'PARTITION',
+  CONSTRAINT = 'CONSTRAINT',
+}
+
+/** 触发器 属性 Tab key 枚举 */
+export enum TriggerPropsTab {
+  BASE_INFO = 'INFO',
+  BASE_OBJECT = 'BASE_OBJECT',
+  CORRELATION = 'CORRELATION',
+  DDL = 'DDL',
+}
+
+/** 同义词 属性 Tab key 枚举 */
+export enum SynonymPropsTab {
+  BASE_INFO = 'INFO',
+  DDL = 'DDL',
+}
+
+/** 类型 属性 Tab key 枚举 */
+export enum TypePropsTab {
+  BASE_INFO = 'INFO',
+  CORRELATION = 'CORRELATION',
+  DDL = 'DDL',
+}
+
+/**
+ * 创建视图
+ */
+
+export interface ICreateViewColumn {
+  columnName: string;
+  aliasName?: string;
+  dbName: string;
+  tableName: string;
+  tableAliasName?: string;
+}
+
+export interface ICreateViewViewUnit {
+  dbName: string;
+  tableName: string;
+  tableAliasName?: string;
+}
+
+export interface ICreateView {
+  viewName: string;
+  checkOption: string;
+  viewUnits?: ICreateViewViewUnit[];
+  createColumns?: ICreateViewColumn[];
+  operations?: string[];
+}
+
+export enum MockGenerator {
+  RANGE_GENERATOR = 'RANGE_GENERATOR',
+  STEP_GENERATOR = 'STEP_GENERATOR',
+  UNIFORM_GENERATOR = 'UNIFORM_GENERATOR',
+  FIX_GENERATOR = 'FIX_GENERATOR',
+  FIX_CHAR_GENERATOR = 'FIX_CHAR_GENERATOR',
+  BOOL_CHAR_GENERATOR = 'BOOL_CHAR_GENERATOR',
+  REGEXP_GENERATOR = 'REGEXP_GENERATOR',
+  RANDOM_GENERATOR = 'RANDOM_GENERATOR',
+  RANDOM_DATE_GENERATOR = 'RANDOM_DATE_GENERATOR',
+  FIX_DATE_GENERATOR = 'FIX_DATE_GENERATOR',
+  STEP_DATE_GENERATOR = 'STEP_DATE_GENERATOR',
+  NULL_GENERATOR = 'NULL_GENERATOR',
+  SKIP_GENERATOR = 'SKIP_GENERATOR',
+}
+
+export interface IServerMockColumn {
+  columnName: string;
+  allowNull?: boolean;
+  defaultValue?: boolean;
+  typeConfig: {
+    columnType: string;
+    lowValue?: string | number;
+    highValue?: string | number;
+    genParams: {
+      [key: string]: any;
+    };
+
+    generator: MockGenerator;
+    width?: any;
+    precision?: any;
+    scale?: any;
+  };
+}
+
+export interface IServerMockTable {
+  columns: IServerMockColumn[];
+  totalCount: number;
+  strategy: string;
+  batchSize: number;
+  whetherTruncate: boolean;
+  tableName: string;
+  schemaName: string;
+  writeCount?: number;
+  conflictCount?: number;
+  ignoreCount?: number;
+  clearCount?: number;
+}
+
+export type IColumnSizeValue =
+  | number
+  | {
+      isNumber: boolean;
+      maxValue: string;
+      minValue: string;
+      scale: number;
+    };
+
+export interface IColumnSizeMap {
+  [key: string]: IColumnSizeValue;
+}
+export enum ESSOLgoinType {
+  OAUTH2 = 'OAUTH2',
+  LDAP = 'LDAP',
+  OIDC = 'OIDC',
+}
+export interface ServerSystemInfo {
+  buildTime: number;
+  startTime: number;
+  version: string;
+  defaultRoles?: string[];
+  profiles?: string[];
+  webResourceLocation?: string;
+  supportGroupQRCodeUrl?: string;
+  maxScriptEditLength?: number;
+  maxScriptUploadLength?: number;
+  fileExpireHours?: number;
+  /**
+   * 反馈邮箱
+   */
+  supportEmail?: string;
+  /**
+   * 支持地址
+   */
+  supportUrl?: string;
+  /**
+   * 首页文案
+   */
+  homePageText?: string;
+  /**
+   * 模拟数据条数限制
+   */
+  mockDataMaxRowCount?: number;
+  // 是否开启 登录验证码
+  captchaEnabled?: boolean;
+  spmEnabled?: boolean;
+  /**
+   * 是否开启队列机制
+   */
+  sessionLimitEnabled?: boolean;
+  /**
+   * 是否开启教程
+   */
+  tutorialEnabled?: boolean;
+  /**
+   * header标题
+   */
+  odcTitle?: string;
+  /**
+   * 是否屏蔽权限申请
+   */
+  applyPermissionHidden?: boolean;
+  /**
+   * 是否展示登录页
+   */
+  passwordLoginEnabled?: boolean;
+  /**
+   * 是否有三方登录
+   */
+  ssoLoginEnabled?: boolean;
+  ssoLoginName?: string;
+  /** @description 第三集成登录类型 */
+  ssoLoginType?: ESSOLgoinType;
+}
+
+export enum ODCErrorsCode {
+  LoginExpired = 'LoginExpired',
+  UnauthorizedSessionAccess = 'UnauthorizedSessionAccess',
+  ConnectionExpired = 'ConnectionExpired',
+  ConnectionKilled = 'ConnectionKilled',
+  SysTenantAccountNotSet = 'SysTenantAccountNotSet',
+  SysTenantAccountInvalid = 'SysTenantAccountInvalid',
+  PermissionChanged = 'PermissionChanged',
+  AccessDenied = 'AccessDenied',
+}
+
+export enum ConnectType {
+  NONE = 'NONE',
+  OB_MYSQL = 'OB_MYSQL',
+  OB_ORACLE = 'OB_ORACLE',
+  CLOUD_OB_MYSQL = 'CLOUD_OB_MYSQL',
+  CLOUD_OB_ORACLE = 'CLOUD_OB_ORACLE',
+  ODP_SHARDING_OB_MYSQL = 'ODP_SHARDING_OB_MYSQL',
+  MYSQL = 'MYSQL',
+  DORIS = 'DORIS',
+  PG = 'POSTGRESQL',
+  ORACLE = 'ORACLE',
+  OSS = 'OSS',
+  COS = 'COS',
+  OBS = 'OBS',
+  S3A = 'S3A',
+}
+
+export enum DatasourceGroup {
+  OceanBaseDatabase = 'OceanBaseDatabase',
+  OtherDatabase = 'OtherDatabase',
+  FileSystem = 'FileSystem',
+}
+
+export enum DragInsertType {
+  NAME = 'object_name',
+  SELECT = 'select_stmt',
+  INSERT = 'insert_stmt',
+  UPDATE = 'update_stmt',
+  DELETE = 'delete_stmt',
+}
+
+export enum SQLLintMode {
+  AUTO = 'AUTO',
+  MANUAL = 'MANUAL',
+}
+
+export interface IRecycleConfig {
+  readonly objectExpireTime: string;
+  recyclebinEnabled: boolean;
+  truncateFlashbackEnabled: boolean;
+}
+
+export enum RSModifyDataType {
+  RAW = 'RAW',
+  FILE = 'FILE',
+  HEX = 'HEX',
+}
+
+export class LobExt {
+  public info: string;
+  public type: RSModifyDataType;
+  constructor(info, type) {
+    this.info = info;
+    this.type = type;
+  }
+}
+
+export enum MaskRuleType {
+  // 掩盖
+  MASK = 'MASK',
+  // 替换
+  SUBSTITUTION = 'SUBSTITUTION',
+  // 保留格式
+  PSEUDO = 'PSEUDO',
+  // 哈希
+  HASH = 'HASH',
+  // 取整
+  ROUNDING = 'ROUNDING',
+  // 置空
+  NULL = 'NULL',
+}
+
+export enum MaskRuleCustomSegmentsType {
+  // 位数
+  DIGIT = 'DIGIT',
+  // 位数比例
+  DIGIT_PERCENTAGE = 'DIGIT_PERCENTAGE',
+  // 其他位数
+  LEFT_OVER = 'LEFT_OVER',
+  // 指定分隔符前
+  DELIMITER = 'DELIMITER',
+}
+
+export enum MaskRuleHashType {
+  MD5 = 'MD5',
+  SHA256 = 'SHA256',
+  SHA512 = 'SHA512',
+  SM3 = 'SM3',
+}
+
+export enum MaskRuleSegmentsType {
+  // 展示前一后一
+  PRE_1_POST_1 = 'PRE_1_POST_1',
+  // 展示前三后二
+  PRE_3_POST_2 = 'PRE_3_POST_2',
+  // 展示前三后四
+  PRE_3_POST_4 = 'PRE_3_POST_4',
+  // 替换全部
+  ALL = 'ALL',
+  // 替换前三位
+  PRE_3 = 'PRE_3',
+  // 替换后四位
+  POST_4 = 'POST_4',
+  // 自定义
+  CUSTOM = 'CUSTOM',
+}
+
+export interface IMaskRule {
+  id: number;
+  name: string;
+  builtIn: boolean;
+  type: MaskRuleType;
+  enabled: boolean;
+  createTime: number;
+  updateTime: number;
+  testValue: string;
+  decimal: boolean;
+  precision: number;
+  characterCollection: string[];
+  hashType: MaskRuleHashType;
+  creator: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  };
+
+  segmentsType: MaskRuleSegmentsType;
+  replacedCharacters: string;
+  segments: {
+    mask: boolean;
+    type: MaskRuleCustomSegmentsType;
+    replacedCharacters: string;
+    delimiter: string;
+    digitPercentage: number;
+    digitNumber: number;
+  }[];
+}
+
+export interface IMaskPolicy {
+  id: number;
+  name: string;
+  createTime: number;
+  updateTime: number;
+  creator: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  };
+
+  ruleApplyings: {
+    rule: IMaskRule;
+    includes: string[];
+    excludes: string[];
+  }[];
+}
+
+export enum TaskPartitionStrategy {
+  DROP = 'DROP',
+  CREATE = 'CREATE',
+}
+
+export interface IPartitionTableConfig {
+  partitionNameInvoker: PARTITION_NAME_INVOKER;
+  partitionNameInvokerParameters?: Record<string, any>;
+  partitionKeyConfigs?: IPartitionKeyConfig[];
+  id?: number;
+  enabled?: boolean;
+  tableName?: string;
+  partitionType?: string;
+  containsCreateStrategy?: boolean;
+  containsDropStrategy?: boolean;
+  reloadIndexes?: boolean;
+}
+
+export interface IPartitionTablePreviewConfig {
+  tableNames: string[];
+  template: IPartitionTableConfig;
+}
+
+export enum PARTITION_NAME_INVOKER {
+  CUSTOM_PARTITION_NAME_GENERATOR = 'CUSTOM_PARTITION_NAME_GENERATOR',
+  DATE_BASED_PARTITION_NAME_GENERATOR = 'DATE_BASED_PARTITION_NAME_GENERATOR',
+}
+
+export enum PARTITION_KEY_INVOKER {
+  CUSTOM_GENERATOR = 'CUSTOM_GENERATOR',
+  TIME_INCREASING_GENERATOR = 'TIME_INCREASING_GENERATOR',
+  KEEP_MOST_LATEST_GENERATOR = 'KEEP_MOST_LATEST_GENERATOR',
+  HISTORICAL_PARTITION_PLAN_DROP_GENERATOR = 'HISTORICAL_PARTITION_PLAN_DROP_GENERATOR',
+  HISTORICAL_PARTITION_PLAN_CREATE_GENERATOR = 'HISTORICAL_PARTITION_PLAN_CREATE_GENERATOR',
+  NUMBER_INCREASING_GENERATOR = 'NUMBER_INCREASING_GENERATOR',
+  TIME_STRING_INCREASING_GENERATOR = 'TIME_STRING_INCREASING_GENERATOR',
+}
+
+export enum TaskErrorStrategy {
+  CONTINUE = 'CONTINUE',
+  ABORT = 'ABORT',
+}
+
+export interface IPartitionKeyConfig {
+  partitionKey?: string;
+  partitionKeyInvoker: PARTITION_KEY_INVOKER;
+  strategy: TaskPartitionStrategy;
+  partitionKeyInvokerParameters: Record<string, any>;
+}
+
+export interface IPartitionPlan {
+  creationTrigger: ICycleTaskTriggerConfig;
+  createTriggerNextFireTimes: number[];
+  droppingTrigger: ICycleTaskTriggerConfig;
+  dropTriggerNextFireTimes: number[];
+  databaseId: number;
+  enabled: boolean;
+  id: number;
+  maxErrors: number;
+  timeoutMillis: number;
+  partitionTableConfig: IPartitionTableConfig;
+  partitionTableConfigs: IPartitionTableConfig[];
+  errorStrategy: TaskErrorStrategy;
+}
+
+export interface IPartitionPlanTable {
+  DDL: string;
+  columns: {
+    name: string;
+    typeName: string;
+  }[];
+  constraints: unknown;
+  containsCreateStrategy: boolean;
+  containsDropStrategy: boolean;
+  reloadIndexes: boolean;
+  ddl: string;
+  inTablegroup: boolean;
+  indexes: unknown;
+  name: string;
+  owner: unknown;
+  partition: {
+    partitionDefinitions: {
+      comment: string;
+      dataDirectory: string;
+      indexDirectory: string;
+      maxRows: number;
+      maxValues: string[];
+      minRows: number;
+      name: string;
+      ordinalPosition: unknown;
+      type: string;
+      valuesList: unknown;
+      parentPartitionDefinition?: IPartitionPlanTable['partition']['partitionDefinitions'];
+    }[];
+    partitionKeyTypes: {
+      name: string;
+      precision: number;
+      scale?: number;
+    }[];
+    partitionOption: {
+      automatic: unknown;
+      columnNames: string[];
+      expression: string;
+      partitionsNum: number;
+      type: string;
+      verticalColumnNames: unknown;
+    };
+    schemaName: string;
+    subpartition: IPartitionPlanTable['partition'];
+    subpartitionTemplated: boolean;
+    tableName: string;
+    warning: unknown;
+  };
+  partitionPlanTableConfig: IPartitionTableConfig;
+  partitionMode: string;
+  rangePartitioned: number;
+  schemaName: string;
+  stats: unknown;
+  strategies: TaskPartitionStrategy[];
+  tableOptions: unknown;
+  warning: unknown;
+}
+
+export interface IPartitionPlanKeyType {
+  name: string;
+  precision: number;
+  scale: number;
+  localizedMessage?: string;
+}
+
+export enum IPartitionPlanPeriodUnit {
+  YEAR = 'YEAR',
+  MONTH = 'MONTH',
+  DAY = 'DAY',
+}
+
+export enum SchemaComparingResult {
+  /**
+   * 目标表不存在，需要新建表
+   */
+  CREATE = 'CREATE',
+
+  /**
+   * 表结构不一致，需要更新表结构
+   */
+  UPDATE = 'UPDATE',
+
+  /**
+   * 表结构一致，无需变更
+   */
+  NO_ACTION = 'NO_ACTION',
+
+  /**
+   * 等待分析
+   */
+  WAITING = 'WAITING',
+
+  /**
+   * 结构对比分析中
+   */
+  COMPARING = 'COMPARING',
+
+  /**
+   * 跳过分析
+   */
+  SKIP = 'SKIP',
+}
+
+export enum ConnectionFilterStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  TESTING = 'TESTING',
+  NOPASSWORD = 'NOPASSWORD',
+  ALL = 'ALL',
+}
+
+export enum TransState {
+  UNKNOWN = 'UNKNOWN',
+  IDLE = 'IDLE',
+  ACTIVE = 'ACTIVE',
+  TIMEOUT = 'TIMEOUT',
+}
+
+export interface ISessionStatus {
+  sid: string;
+  sessionId: string;
+  state: string;
+  transState: TransState;
+  transId: string;
+  sqlId: string;
+  activeQueries: string;
+  defaultTableStoreFormat: DBDefaultStoreType;
+  killCurrentQuerySupported: boolean;
+}
+
+export interface IAutoAuthEvent {
+  id: number;
+  name: string;
+  builtin: boolean;
+  description: string;
+  variables: string[];
+}
+
+export interface IPromptVo {
+  variableExpression: VariableExpression;
+}
+
+export type VariableExpression = { [key: string]: string[] };
+
+export interface IAutoAuthRule {
+  id?: number;
+  name: string;
+  eventId: number;
+  enabled: boolean;
+  conditions: {
+    object: string;
+    expression: string;
+    operation: string;
+    value: string;
+  }[];
+  actions: {
+    action: string;
+    arguments: {
+      [key: string]: any;
+    };
+  }[];
+  eventName: string;
+  creatorId: number;
+  creatorName: string;
+  createTime: number;
+  updateTime: number;
+  description: string;
+}
+
+export interface IExportResultSetCSVFormat {
+  isContainColumnHeader: boolean;
+  isTransferEmptyString: boolean;
+  columnSeparator: string;
+  columnDelimiter: string;
+  lineSeparator: string;
+}
+
+export enum IExportResultSetFileType {
+  SQL = 'SQL',
+  CSV = 'CSV',
+  EXCEL = 'EXCEL',
+}
+export type ObjectId = string | number;
+export type ScriptId = string | number;
+export interface IScriptMeta {
+  /**
+   * 脚本 id
+   */
+  id: ScriptId;
+  updateTime: number;
+  /**
+   * 文件对象的 id
+   */
+  objectId: ObjectId;
+  objectName: string;
+  /**
+   * 内容摘要，截取前 xx 字符
+   */
+  scriptAbstract: string;
+  contentLength: number;
+}
+
+export interface IScript {
+  content: string;
+  scriptMeta: IScriptMeta;
+}
+
+export enum ISSOType {
+  OIDC = 'OIDC',
+  OAUTH2 = 'OAUTH2',
+  LDAP = 'LDAP',
+  SAML = 'SAML',
+}
+
+export enum IClientAuthenticationMethod {
+  basic = 'basic',
+  client_secret_basic = 'client_secret_basic',
+  post = 'post',
+  client_secret_post = 'client_secret_post',
+  client_secret_jwt = 'client_secret_jwt',
+  private_key_jwt = 'private_key_jwt',
+  none = 'none',
+}
+
+export enum IAuthorizationGrantType {
+  authorization_code = 'authorization_code',
+}
+
+export enum IUserInfoAuthenticationMethod {
+  header = 'header',
+  form = 'form',
+  query = 'query',
+}
+
+export interface ISSO_OAUTH2_CONFIG {
+  registrationId: string;
+  clientId: string;
+  secret: string;
+  authUrl: string;
+  tokenUrl: string;
+  userInfoUrl: string;
+  scope: string[];
+  redirectUrl: string;
+  jwkSetUri?: string;
+  logoutUrl?: string;
+  clientAuthenticationMethod: IClientAuthenticationMethod;
+  authorizationGrantType: IAuthorizationGrantType;
+  userInfoAuthenticationMethod: IUserInfoAuthenticationMethod;
+  nestedAttributeField?: string;
+}
+
+export interface ISSO_OIDC_CONFIG {
+  registrationId: string;
+  clientId: string;
+  secret: string;
+  scope: string[];
+  issueUrl: string;
+  redirectUrl: string;
+}
+
+export interface ISSO_LDAP_CONFIG {
+  server: string;
+  managerDn: string;
+  managerPassword: string;
+  userSearchBase?: string;
+  userSearchFilter: string;
+  groupSearchBase?: string;
+  groupSearchFilter?: string;
+  groupSearchSubtree?: boolean;
+  registrationId?: string;
+  redirectUrl: string;
+}
+
+export enum SAMLType {
+  verification = 'verification',
+  signing = 'signing',
+  decryption = 'decryption',
+}
+
+export interface ISSO_SAML_CONFIG {
+  acsLocation?: string;
+  testAcsLocation?: string;
+  redirectUrl: string;
+  registrationId: string;
+  secret: string;
+  acsEntityId?: string;
+  providerEntityId?: string;
+  [SAMLType.decryption]?: { certificate: string };
+  [SAMLType.signing]?: { certificate: string };
+  [SAMLType.verification]?: { certificate: string };
+  metadataUri?: string;
+  testAcsEntityId?: string;
+  singlesignon?: {
+    url?: string;
+    binding?: 'POST' | 'REDIRECT';
+    signRequest?: boolean;
+  };
+}
+
+export interface ISSO_MAPPINGRULE {
+  userNickNameField: string;
+  userProfileViewType: 'FLAT' | 'NESTED';
+  userAccountNameField: string;
+  extraInfo?: {
+    attributeName: string;
+    expression: string;
+  }[];
+}
+export type ISSOConfig =
+  | {
+      name: string;
+      type: ISSOType.OAUTH2;
+      ssoParameter: ISSO_OAUTH2_CONFIG;
+      mappingRule: ISSO_MAPPINGRULE;
+    }
+  | {
+      name: string;
+      type: ISSOType.OIDC;
+      ssoParameter: ISSO_OIDC_CONFIG;
+      mappingRule: ISSO_MAPPINGRULE;
+    }
+  | {
+      name: string;
+      type: ISSOType.LDAP;
+      ssoParameter: ISSO_LDAP_CONFIG;
+      mappingRule: Omit<ISSO_MAPPINGRULE, 'userAccountNameField'>;
+    }
+  | {
+      name: string;
+      type: ISSOType.SAML;
+      ssoParameter: ISSO_SAML_CONFIG;
+      mappingRule: ISSO_MAPPINGRULE;
+    };
+
+export interface IFormatPLSchema {
+  plName?: string;
+  plType: PLType;
+  packageName?: string;
+  ddl?: string;
+  params?: IPLParam[];
+  function?: IFunction;
+  procedure?: IProcedure;
+}
+
+export interface IPLOutParam extends IPLParam {
+  value: string;
+}
+export interface IPLExecResult {
+  status: 'FAIL' | 'SUCCESS' | '';
+  errorMessage?: string;
+  dbms?: {
+    line: string;
+  };
+  returnValue?: IPLOutParam;
+  outParams?: IPLOutParam[];
+  unauthorizedDBResources?: IUnauthorizedDBResources[];
+}
+export interface IPLCompileResult {
+  messages: string;
+  statementWarnings: string;
+  status: boolean;
+  track: string;
+}
+export interface INlsObject {
+  /**
+   * 格式化后的数据
+   */
+  formattedContent: string;
+  /**
+   * 时区信息
+   */
+  timeZoneId: string;
+  /**
+   * 纳秒值
+   */
+  nano: number;
+  /**
+   * 时间戳
+   */
+  timestamp: number;
+}
+
+export enum ETheme {
+  DARK = 'dark',
+  WHITE = 'white',
+}
+
+export enum EStatus {
+  SUBMIT = 'submit',
+  APPROVAL = 'approval',
+  DISABLED = 'disabled',
+}
+
+export interface AgainTaskRecord {
+  id: string | number;
+}
+
+/** 无锁结构变更任务进度状态 */
+export enum ProgressOfLocklessStructureChangeTaskStatusMap {
+  CREATE_GHOST_TABLES = 'CREATE_GHOST_TABLES', //'创建影子表'
+  CREATE_DATA_TASK = 'CREATE_DATA_TASK', //'创建数据迁移任务'
+  MONITOR_DATA_TASK_TRANSFER_PRECHECK = 'MONITOR_DATA_TASK_TRANSFER_PRECHECK', //'数据迁移任务预检查'
+  MONITOR_DATA_TASK_FULL_TRANSFER = 'MONITOR_DATA_TASK_FULL_TRANSFER', //数据迁移任务迁移全量数据'
+  MONITOR_DATA_TASK_TRANSFER_APP_SWITCH_FALSE = 'MONITOR_DATA_TASK_TRANSFER_APP_SWITCH_FALSE', //'数据迁移任务迁移增量数据'
+  SWAP_TABLE = 'SWAP_TABLE', // '切换中'
+  CLEAR_RESOURCE = 'CLEAR_RESOURCE', // '释放迁移任务资源'
+}
+
+interface UnfinishedTaskType {
+  approvable: boolean;
+  approveInstanceId: number;
+  candidateApprovers: {
+    id: number;
+    name: string;
+    accountName: string;
+  }[];
+  createTime: number;
+  creator: {
+    id: number;
+    name: string;
+    accountName: string;
+    roleNames: string[];
+  };
+  description: string;
+  id: number;
+  project: IProject;
+  status: TaskStatus;
+  type: TaskType;
+}
+
+export type UnfinishedTickets = {
+  unfinishedFlowInstances: UnfinishedTaskType[];
+  unfinishedSchedules: UnfinishedTaskType[];
+};
