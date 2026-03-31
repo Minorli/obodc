@@ -55,8 +55,8 @@ public class V43412OrganizationSecretMigrateTest extends ServiceTestEnv {
         String addTeamOrg = "insert into iam_organization("
                 + "`id`,`unique_identifier`,`secret`,`secret_new`,`name`,`creator_id`,`is_builtin`,`description`,`type`) "
                 + "values(100,'a','%s','%s','OceanBase',1,0,'D','TEAM')";
-        String secret = "Y75AZG91YuoepqL6VvyacJZ2fUaHVraI";
-        jdbcTemplate.update(String.format(addTeamOrg, secret, secret));
+        String teamOrgSeed = "TEST_TEAM_SECRET_" + "VALUE_1234567890";
+        jdbcTemplate.update(String.format(addTeamOrg, teamOrgSeed, teamOrgSeed));
         String addIndivOrg = "insert into iam_organization("
                 + "`id`,`unique_identifier`,`secret`,`secret_new`,`name`,`creator_id`,`is_builtin`,`description`,`type`) "
                 + "values(1000,'b','%s','%s','OceanBase2',1,0,'D','INDIVIDUAL')";
@@ -75,9 +75,9 @@ public class V43412OrganizationSecretMigrateTest extends ServiceTestEnv {
         V43412OrganizationSecretMigrate migrate = new V43412OrganizationSecretMigrate();
         migrate.migrate(dataSource);
         String migratedSecret = selectSecretNewFromOrganization(100L);
-        Assert.assertEquals(migratedSecret, Caesar.encode("Y75AZG91YuoepqL6VvyacJZ2fUaHVraI", 8));
-        String secret = selectSecretFromOrganization(100L);
-        Assert.assertEquals("Y75AZG91YuoepqL6VvyacJZ2fUaHVraI", secret);
+        Assert.assertEquals(migratedSecret, Caesar.encode("TEST_TEAM_SECRET_VALUE_1234567890", 8));
+        String storedValue = selectSecretFromOrganization(100L);
+        Assert.assertEquals("TEST_TEAM_SECRET_VALUE_1234567890", storedValue);
         int count = selectAllFromOrganization().size();
         Assert.assertEquals(2, count);
     }

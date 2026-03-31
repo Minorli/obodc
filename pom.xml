@@ -21,7 +21,7 @@
         <module>server/odc-server</module>
         <module>server/starters</module>
         <module>server/modules</module>
-        <module>server/integration-test</module>
+        <module>tests/integration</module>
         <module>server/odc-migrate</module>
     </modules>
 

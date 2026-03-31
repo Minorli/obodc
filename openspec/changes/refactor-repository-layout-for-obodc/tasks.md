@@ -19,7 +19,7 @@
 - [ ] 4.2 Move shared backend modules under `packages/backend/`
 - [ ] 4.3 Move local reusable libraries under `packages/libs/`
 - [ ] 4.4 Move plugins, starters, and modules under `extensions/`
-- [ ] 4.5 Move integration tests and test scripts under `tests/`
+- [x] 4.5 Move integration tests and test scripts under `tests/`
 
 ## 5. Phase 4 Cleanup
 - [ ] 5.1 Remove obsolete legacy wrappers after verification
