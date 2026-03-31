@@ -98,7 +98,7 @@ const popoverContent: React.FC = () => {
         {
           formatMessage({
             id: 'odc.component.AskEventTrackingModal.OdcDoesNotCollectPersonal',
-            defaultMessage: 'ODC 不会收集用户的个人信息，仅采集以下页面的使用频率：',
+            defaultMessage: 'obodc 不会收集用户的个人信息，仅采集以下页面的使用频率：',
           }) /*ODC不会收集用户的个人信息，仅采集以下页面的使用频率：*/
         }
       </p>
@@ -156,7 +156,7 @@ const AskeventTrackingPermissionModal: React.FC<IProps> = (props: IProps) => {
             formatMessage({
               id: 'odc.component.AskEventTrackingModal.InOrderToImproveAnd',
               defaultMessage:
-                '为了改进和开发我们的产品，以便给您提供更好的服务，ODC 在运行过程中会收集部分模块的使用频次信息。',
+                '为了改进和开发我们的产品，以便给您提供更好的服务，obodc 在运行过程中会收集部分模块的使用频次信息。',
             }) /*为了改进和开发我们的产品，以便给您提供更好的服务，ODC在运行过程中会收集部分模块的使用频次信息。*/
           }
         </p>

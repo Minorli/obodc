@@ -52,8 +52,8 @@ const performanceSettings: IODCSetting[] = [
   {
     label: formatMessage({
       id: 'src.component.ODCSetting.config.74959AFE',
-      defaultMessage: 'ODC 参数',
-    }), //'ODC 参数'
+      defaultMessage: 'obodc 参数',
+    }), //'obodc 参数'
     key: 'client.start.params',
     locationKey: 'startparams',
     tip: restartTip,

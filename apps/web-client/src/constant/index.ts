@@ -223,44 +223,44 @@ export enum PartitionBound {
 export const ObDocsUrlMap = {
   'en-us': {
     '100.sql-development-common-techniques.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418134',
+      'https://github.com/Minorli/obodc/blob/main/apps/web-client/README.md',
     '200.common-operations-in-odc-team-space.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418130',
+      'https://github.com/Minorli/obodc/blob/main/README.md',
     '300.analysis-of-oceanbase-ap-real-time-sql-diagnostic-capabilities.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418132',
+      'https://github.com/Minorli/obodc/blob/main/docs/en-US/DEVELOPER_GUIDE.md',
     '400.history-database-optimization-management.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418131',
+      'https://github.com/Minorli/obodc/blob/main/CHANGELOG.md',
     '500.automatic-detection-of-high-risk-changes.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418133',
+      'https://github.com/Minorli/obodc/issues',
     '700.implement-management-and-changes-for-database.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418127',
+      'https://github.com/Minorli/obodc/blob/main/docs/en-US/CONTRIBUTION.md',
     '800.data-masking-control-practices.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418126',
+      'https://github.com/Minorli/obodc/blob/main/docs/en-US/DEVELOPER_GUIDE.md',
     '900.enterprise-level-governance-and-control-synergy.html':
-      'https://en.oceanbase.com/docs/common-odc-10000000002418128',
-    softwarecenter: 'https://en.oceanbase.com/softwarecenter',
-    releaseNote: 'https://www.oceanbase.com/product/oceanbase-developer-center-rn/releaseNote',
-    issues: 'https://github.com/oceanbase/odc/issues',
+      'https://github.com/Minorli/obodc/discussions',
+    softwarecenter: 'https://github.com/Minorli/obodc',
+    releaseNote: 'https://github.com/Minorli/obodc/blob/main/CHANGELOG.md',
+    issues: 'https://github.com/Minorli/obodc/issues',
   },
   'zh-cn': {
     '100.sql-development-common-techniques.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002859674',
+      'https://github.com/Minorli/obodc/blob/main/apps/web-client/docs/README_CN.md',
     '200.common-operations-in-odc-team-space.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002859675',
+      'https://github.com/Minorli/obodc/blob/main/README-zh-CN.md',
     '300.analysis-of-oceanbase-ap-real-time-sql-diagnostic-capabilities.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002687235',
+      'https://github.com/Minorli/obodc/blob/main/docs/zh-CN/DEVELOPER_GUIDE.md',
     '400.history-database-optimization-management.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002687236',
+      'https://github.com/Minorli/obodc/blob/main/CHANGELOG-zh-CN.md',
     '500.automatic-detection-of-high-risk-changes.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002687237',
+      'https://github.com/Minorli/obodc/issues',
     '700.implement-management-and-changes-for-database.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002687240',
+      'https://github.com/Minorli/obodc/blob/main/docs/zh-CN/CONTRIBUTION.md',
     '800.data-masking-control-practices.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002687241',
+      'https://github.com/Minorli/obodc/blob/main/docs/zh-CN/DEVELOPER_GUIDE.md',
     '900.enterprise-level-governance-and-control-synergy.html':
-      'https://www.oceanbase.com/docs/common-odc-1000000002687239',
-    softwarecenter: 'https://www.oceanbase.com/softwarecenter',
-    releaseNote: 'https://www.oceanbase.com/product/oceanbase-developer-center-rn/releaseNote',
-    issues: 'https://github.com/oceanbase/odc/issues',
+      'https://github.com/Minorli/obodc/discussions',
+    softwarecenter: 'https://github.com/Minorli/obodc',
+    releaseNote: 'https://github.com/Minorli/obodc/blob/main/CHANGELOG-zh-CN.md',
+    issues: 'https://github.com/Minorli/obodc/issues',
   },
 };

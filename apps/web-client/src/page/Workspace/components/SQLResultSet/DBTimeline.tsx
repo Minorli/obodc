@@ -33,17 +33,17 @@ export default function DBTimeline({ row }: IProps) {
     {
       title: formatMessage({
         id: 'odc.components.SQLResultSet.ExecuteHistory.OdcParsesSql',
-        defaultMessage: 'ODC 解析 SQL',
-      }), //ODC 解析 SQL
-      key: 'ODC Parse SQL',
+        defaultMessage: 'obodc 解析 SQL',
+      }), //obodc 解析 SQL
+      key: 'obodc Parse SQL',
     },
 
     {
       title: formatMessage({
         id: 'odc.components.SQLResultSet.ExecuteHistory.OdcRewriteSql',
-        defaultMessage: 'ODC 重写 SQL',
-      }), //ODC 重写 SQL
-      key: 'ODC Rewrite SQL',
+        defaultMessage: 'obodc 重写 SQL',
+      }), //obodc 重写 SQL
+      key: 'obodc Rewrite SQL',
     },
     {
       title: formatMessage({

@@ -64,7 +64,7 @@ export default class ErrorBoundary extends React.Component {
           subTitle={
             formatMessage({
               id: 'odc.src.component.ErrorBoundary.TheCurrentODCVersionHas',
-              defaultMessage: '当前 ODC 版本已过期，请刷新重试',
+              defaultMessage: '当前 obodc 版本已过期，请刷新重试',
             }) /* 当前 ODC 版本已过期，请刷新重试 */
           }
           extra={

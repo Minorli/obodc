@@ -73,8 +73,8 @@ export function newWindowEvent(mainWindow: BrowserWindow) {
       const choice = dialog.showMessageBoxSync(mainWindow, {
         type: 'question',
         buttons: ['关闭', '取消'],
-        title: '关闭 ODC',
-        message: '确定关闭 ODC，您的SQL 窗口内容将会保留',
+        title: '关闭 obodc',
+        message: '确定关闭 obodc，您的 SQL 窗口内容将会保留',
       });
 
       // 根据用户的选择进行处理
