@@ -293,7 +293,7 @@
                                             <location>${project.basedir}/../../script/generate-odc-ssl-certificate.sh</location>
                                         </source>
                                         <source>
-                                            <location>${project.basedir}/../../import/obclient.tar.gz</location>
+                                            <location>${project.basedir}/../../third_party/binaries/obclient.tar.gz</location>
                                         </source>
                                     </sources>
                                 </mapping>

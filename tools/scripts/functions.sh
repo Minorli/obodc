@@ -331,7 +331,7 @@ function maven_install_libs() {
     build_module "db-browser" "${maven_extra_args[@]}" || return 2
 
     popd
-    pushd "${ODC_DIR}/import" || return 1
+    pushd "${ODC_DIR}/third_party/binaries" || return 1
 
     func_echo "start install lib pty4j-0.11.4.jar"
 
@@ -363,22 +363,22 @@ function oss_fetch_obclient() {
     fi
 
     target_obclient_file_path="oss://${ODC_OSS_BUCKET_NAME}/library/obclient/${OBCLIENT_VERSION}/${rpm_arch}/obclient.tar.gz"
-    local_obclient_file_path="${ODC_DIR}/import/"
+    local_obclient_file_path="${ODC_DIR}/third_party/binaries/"
     echo "local_obclient_file_path: ${local_obclient_file_path}"
     ossutil64 cp --force --retry-times=${OSS_RETRY_TIMES} --config-file "${ODC_OSS_CONFIG_FILE_NAME}" \
         "${target_obclient_file_path}" "${local_obclient_file_path}"
 
-    echo "list files in import directory"
+    echo "list files in third_party/binaries directory"
     ls ${local_obclient_file_path}
 }
 
 #
-# copy architecture matched obclient install package to `import/obclient.tar.gz`
+# copy architecture matched obclient install package to `third_party/binaries/obclient.tar.gz`
 #
 function copy_obclient() {
     local source_directory_name=$(get_cpu_arch | grep -q x86 && echo "linux_x86" || echo "linux_arm64")
-    local source_obclient_file_path="${ODC_DIR}/build-resource/obclient/${OBCLIENT_VERSION_NUMBER}/${source_directory_name}/obclient.tar.gz"
-    local target_obclient_file_path="${ODC_DIR}/import/obclient.tar.gz"
+    local source_obclient_file_path="${ODC_DIR}/build/resources/obclient/${OBCLIENT_VERSION_NUMBER}/${source_directory_name}/obclient.tar.gz"
+    local target_obclient_file_path="${ODC_DIR}/third_party/binaries/obclient.tar.gz"
     if [[ -f "${source_obclient_file_path}" ]]; then
         echo "${source_obclient_file_path} exists, will copy to ${target_obclient_file_path} ..."
         cp -vf "${source_obclient_file_path}" "${target_obclient_file_path}"

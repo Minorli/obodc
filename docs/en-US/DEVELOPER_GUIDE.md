@@ -23,7 +23,7 @@ cd obodc
 
 ## 3. Build Dependencies
 
-The project still relies on a small number of locally installed binary dependencies stored under `import/`.
+The project still relies on a small number of locally installed binary dependencies stored under `third_party/binaries/`.
 Install them first:
 
 ```bash
@@ -86,7 +86,7 @@ Typical commands:
 
 ## 7. Formatting and IDE
 
-- The repository formatting rules currently live under `builds/code-style/` and are planned to migrate under `build/`.
+- The repository formatting rules now live under `build/config/code-style/`.
 - IntelliJ IDEA project settings under `.idea/codeStyle` should be used as the baseline.
 - Install Lombok support if your IDE needs it.
 

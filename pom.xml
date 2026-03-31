@@ -33,8 +33,8 @@
 
         <!-- project constant configuration -->
         <root-project.basedir>${project.basedir}</root-project.basedir>
-        <format.config.file>builds/code-style/eclipse-java-oceanbase-style.xml</format.config.file>
-        <pmd.ruleset.file>builds/odc-pmd-rules.xml</pmd.ruleset.file>
+        <format.config.file>build/config/code-style/eclipse-java-oceanbase-style.xml</format.config.file>
+        <pmd.ruleset.file>build/config/odc-pmd-rules.xml</pmd.ruleset.file>
         <odc-server.rpm.name>odc-server</odc-server.rpm.name>
 
         <!-- oceanbase 2nd-party dependencies  -->

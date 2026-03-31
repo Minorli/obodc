@@ -22,7 +22,7 @@ cd obodc
 
 ## 3. 构建依赖
 
-项目仍然依赖少量存放在 `import/` 目录下、需要本地安装的二进制依赖，先执行：
+项目仍然依赖少量存放在 `third_party/binaries/` 目录下、需要本地安装的二进制依赖，先执行：
 
 ```bash
 tools/scripts/build_libs.sh
@@ -84,7 +84,7 @@ tools/scripts/nohup-start-odc.sh
 
 ## 7. 代码格式与 IDE
 
-- 仓库格式化规则当前仍位于 `builds/code-style/`，后续会继续迁到 `build/` 体系下
+- 仓库格式化规则现在位于 `build/config/code-style/`
 - `.idea/codeStyle` 可以作为 IntelliJ IDEA 的默认基线
 - 如果 IDE 需要，请安装 Lombok 支持
 

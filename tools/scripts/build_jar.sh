@@ -12,7 +12,7 @@ if ! maven_build_jar "${mvn_extra_args[@]}"; then
     exit 3
 fi
 
-echo "maven build jar success, copy executable jar to ${ODC_DIR}/lib for use script/start-odc.sh locally."
+echo "maven build jar success, copy executable jar to ${ODC_DIR}/lib for local startup scripts."
 
 mkdir -p "${ODC_DIR}/"{lib,conf,plugins,starters,modules}
 find "${ODC_DIR}/lib" -type f -name '*.jar' -exec rm -fv {} +

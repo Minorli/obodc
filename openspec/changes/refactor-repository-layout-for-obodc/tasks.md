@@ -9,9 +9,9 @@
 - [x] 2.3 Update root documentation to describe canonical layout
 
 ## 3. Phase 2 Build And Packaging Migration
-- [ ] 3.1 Move script sources to `tools/scripts/` and keep legacy wrappers
+- [x] 3.1 Move script sources to `tools/scripts/` and keep legacy wrappers
 - [ ] 3.2 Move source-owned packaging assets to `build/packaging/`
-- [ ] 3.3 Move local binary and vendored assets to `third_party/` and `build/resources/`
+- [x] 3.3 Move local binary and vendored assets to `third_party/` and `build/resources/`
 - [ ] 3.4 Update Maven paths, packaging scripts, and CI workflows
 
 ## 4. Phase 3 Java Module Migration
